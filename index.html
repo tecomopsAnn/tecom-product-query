@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TECOM｜外購品產品 / 備品查詢系統（維修人員專用）</title>
+
+  <style>
+    :root{
+      --bg:#f6f8fc;
+      --card:#ffffff;
+      --line:#d7e2f3;
+      --text:#0f172a;
+      --muted:#5b6b85;
+
+      --brand:#0b3a75;
+      --brand-2:#0e4a92;
+      --brand-3:#eaf2ff;
+      --accent:#1b77ff;
+      --danger:#c0262d;
+      --ok:#0f766e;
+
+      --radius:14px;
+      --shadow: 0 10px 26px rgba(15, 23, 42, .08);
+      --shadow2: 0 6px 16px rgba(15, 23, 42, .06);
+      --font: "Microsoft JhengHei", system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans TC", Arial, sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    /* Header */
+    .topbar{
+      background:linear-gradient(90deg, var(--brand), var(--brand-2));
+      color:#fff;
+      padding:18px 18px;
+      position:sticky;
+      top:0;
+      z-index:10;
+      box-shadow:0 4px 16px rgba(0,0,0,.12);
+    }
+    .topbar .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    /* ✅ 只留一行主標題（原本小字升級） */
+    .brand-title{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:.2px;
+      line-height:1.25;
+    }
+
+    /* Layout */
+    .page{
+      max-width:1200px;
+      margin:18px auto 18px;
+      padding:0 18px;
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap:18px;
+    }
+    @media (max-width: 980px){
+      .page{ grid-template-columns: 1fr; }
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow2);
+      overflow:hidden;
+    }
+
+    .menu{
+      padding:10px 8px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .menu button{
+      border:1px solid transparent;
+      background:transparent;
+      text-align:left;
+      padding:10px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      color:var(--text);
+      font-weight:800;
+      font-size:14px;
+      transition:.15s ease;
+    }
+    .menu button:hover{
+      background:#f1f6ff;
+      border-color:var(--line);
+    }
+    .menu button.active{
+      background:linear-gradient(180deg, #eaf2ff, #ffffff);
+      border-color:var(--line);
+      color:var(--brand);
+      box-shadow:0 2px 0 rgba(11,58,117,.08) inset;
+    }
+
+    .hint{
+      padding:10px 14px 14px;
+      color:var(--muted);
+      font-size:12.5px;
+      border-top:1px solid var(--line);
+    }
+
+    /* Main */
+    .main{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .bar{
+      padding:14px 16px;
+      background:linear-gradient(90deg, #0b3a75, #0e4a92);
+      color:#fff;
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+    .card .body{
+      padding:16px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap:10px;
+      align-items:end;
+    }
+    @media (max-width: 760px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    label{
+      display:block;
+      font-size:12.5px;
+      color:var(--muted);
+      margin-bottom:6px;
+      font-weight:800;
+    }
+    input{
+      width:100%;
+      padding:11px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      outline:none;
+      font-size:14px;
+      background:#fff;
+    }
+    input:focus{
+      border-color:#9dc0ff;
+      box-shadow:0 0 0 4px rgba(27,119,255,.12);
+    }
+    .btn{
+      padding:11px 14px;
+      border-radius:12px;
+      border:1px solid rgba(27,119,255,.35);
+      background:linear-gradient(180deg, #2b86ff, #1b77ff);
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+      transition:.12s ease;
+      min-width:120px;
+    }
+    .btn:hover{ filter:brightness(1.02); }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .msg{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .msg.error{ color:var(--danger); font-weight:900; }
+    .msg.ok{ color:var(--ok); font-weight:900; }
+
+    .section-title{
+      margin:12px 0 8px;
+      font-weight:900;
+      color:var(--brand);
+      font-size:16px;
+    }
+
+    /* Result blocks */
+    .kv{
+      display:grid;
+      grid-template-columns: 140px 1fr;
+      gap:8px 12px;
+      padding:12px;
+      border:1px dashed #cfe0ff;
+      background:#f7fbff;
+      border-radius:12px;
+      margin-top:10px;
+      font-size:14px;
+    }
+    .kv .k{ color:var(--muted); font-weight:900; }
+    .kv .v{ font-weight:900; }
+
+    /* Table */
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+    }
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid var(--line);
+      font-size:13.5px;
+      vertical-align:top;
+    }
+    th{
+      background:#f2f7ff;
+      color:var(--brand);
+      font-weight:900;
+      text-align:left;
+    }
+    tr:last-child td{ border-bottom:none; }
+
+    .footer-note{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* Hide panels */
+    .panel{ display:none; }
+    .panel.active{ display:block; }
+  </style>
+	<script>
+  // ✅ 這裡填你部署 Web App 的 exec URL
+  const API_BASE = "https://script.google.com/macros/s/AKfycby6rGkJbK73FEbrSdGPWq8TVYlcG4PcRzoghnB5uywRBCF9_NFuTdwcBk-8xWKujGPgsg/exec";
+
+  /** JSONP helper（避開 CORS） */
+  function jsonp(url){
+    return new Promise((resolve, reject) => {
+      const cbName = "cb_" + Math.random().toString(36).slice(2);
+      const sep = url.includes("?") ? "&" : "?";
+      const full = url + sep + "callback=" + cbName;
+
+      const script = document.createElement("script");
+      script.src = full;
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("JSONP load error"));
+      };
+
+      function cleanup(){
+        delete window[cbName];
+        script.remove();
+      }
+
+      window[cbName] = (data) => {
+        cleanup();
+        resolve(data);
+      };
+
+      document.body.appendChild(script);
+    });
+  }
+
+  /** Querystring builder */
+  function qs(obj){
+    const p = new URLSearchParams();
+    Object.entries(obj).forEach(([k,v])=>{
+      if (v !== undefined && v !== null && String(v).trim() !== "") p.append(k, v);
+    });
+    return p.toString();
+  }
+
+  // ✅ 分頁切換：右側藍條與分頁聯動
+  document.addEventListener("DOMContentLoaded", () => {
+    const menu = document.getElementById("menu");
+    if (!menu) return;
+
+    const buttons = Array.from(menu.querySelectorAll("button[data-panel]"));
+
+    function activate(panelId) {
+      buttons.forEach(b => b.classList.toggle("active", b.dataset.panel === panelId));
+      document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === panelId));
+
+      const btn = buttons.find(b => b.dataset.panel === panelId);
+      const titleText = btn ? btn.textContent.trim() : "";
+
+      // 更新右側藍條（只更新目前頁）
+      const panelEl = document.getElementById(panelId);
+      const barEl = panelEl ? panelEl.querySelector("[data-bar]") : null;
+      if (barEl && titleText) barEl.textContent = titleText;
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    buttons.forEach(btn => btn.addEventListener("click", () => activate(btn.dataset.panel)));
+    const defaultPanel = (buttons.find(b => b.classList.contains("active")) || buttons[0])?.dataset.panel;
+    if (defaultPanel) activate(defaultPanel);
+  });
+
+  /** ====== UI helpers ====== */
+  function setMsg(panelId, type, text){
+    const el = document.getElementById(panelId + "_msg");
+    if (!el) return;
+    el.className = "msg " + (type || "");
+    el.textContent = text || "";
+  }
+
+  /** ====== Real Search (replace mockSearch) ====== */
+  async function realSearch(panelId){
+    try {
+      setMsg(panelId, "", "查詢中…");
+
+      if (panelId === "p1"){
+        const code = document.getElementById("p1_code").value.trim();
+        const model = document.getElementById("p1_model").value.trim();
+        const url = API_BASE + "?" + qs({ action:"product_lookup", code, model });
+        const res = await jsonp(url);
+
+        if (!res.ok) throw new Error(res.msg || "API error");
+        if (!res.product) {
+          setMsg("p1", "error", res.msg || "查無資料");
+          return;
+        }
+
+        // 填 KV
+        const kv = document.getElementById("p1_kv").children;
+        kv[1].textContent = res.product.product_code || "—";
+        kv[3].textContent = res.product.model_no || "—";
+        kv[5].textContent = res.product.vendor_code || "—";
+        kv[7].textContent = res.product.name_zh || "—";
+        kv[9].textContent = res.product.note || "—";
+
+        // 填表
+        const tbody = document.querySelector("#p1_tbl tbody");
+        const items = Array.isArray(res.items) ? res.items : [];
+        if (!items.length){
+          tbody.innerHTML = `<tr><td colspan="6" style="color:#5b6b85;">查無 BOM/備品資料</td></tr>`;
+        } else {
+          tbody.innerHTML = items.map(it => `
+            <tr>
+              <td>${esc(it.item)}</td>
+              <td>${esc(it.part_code)}</td>
+              <td>${esc(it.part_model)}</td>
+              <td>${esc(it.description)}</td>
+              <td>${esc(it.note)}</td>
+              <td>${esc(it.stock_qty)}</td>
+            </tr>
+          `).join("");
+        }
+
+        setMsg("p1", "ok", "查詢完成");
+        return;
+      }
+
+      if (panelId === "p2"){
+        const sn = document.getElementById("p2_sn").value.trim();
+        const mac = document.getElementById("p2_mac").value.trim();
+        const url = API_BASE + "?" + qs({ action:"serial_lookup", sn, mac });
+        const res = await jsonp(url);
+
+        if (!res.ok) throw new Error(res.msg || "API error");
+        if (!res.data){
+          setMsg("p2", "error", res.msg || "查無資料");
+          return;
+        }
+
+        const kv = document.getElementById("p2_kv").children;
+        kv[1].textContent = res.data.serial_no || "—";
+        kv[3].textContent = res.data.model_no || "—";
+        kv[5].textContent = res.data.ship_date || "—";
+        kv[7].textContent = res.data.customer_name || "—";
+        kv[9].textContent = res.data.ship_doc_no || "—";
+        kv[11].textContent = res.data.mac || "—";
+
+        setMsg("p2", res.msg === "OK" ? "ok" : "", res.msg || "完成");
+        return;
+      }
+
+      if (panelId === "p3"){
+        const q = document.getElementById("p3_q").value.trim();
+        const url = API_BASE + "?" + qs({ action:"mainboard_lookup", q });
+        const res = await jsonp(url);
+
+        if (!res.ok) throw new Error(res.msg || "API error");
+        const rows = Array.isArray(res.rows) ? res.rows : [];
+        const tbody = document.querySelector("#p3_tbl tbody");
+        tbody.innerHTML = rows.length ? rows.map(r => `
+          <tr>
+            <td>${esc(r.host)}</td>
+            <td>${esc(r.part_code)}</td>
+            <td>${esc(r.part_model)}</td>
+            <td>${esc(r.description)}</td>
+            <td>${esc(r.note)}</td>
+            <td>${esc(r.stock_qty)}</td>
+          </tr>
+        `).join("") : `<tr><td colspan="6" style="color:#5b6b85;">${esc(res.msg || "查無資料")}</td></tr>`;
+
+        setMsg("p3", rows.length ? "ok" : "error", res.msg || (rows.length ? "查詢完成" : "查無資料"));
+        return;
+      }
+
+      if (panelId === "p4"){
+        const q = document.getElementById("p4_q").value.trim();
+        const url = API_BASE + "?" + qs({ action:"adapter_lookup", q });
+        const res = await jsonp(url);
+
+        if (!res.ok) throw new Error(res.msg || "API error");
+        const rows = Array.isArray(res.rows) ? res.rows : [];
+        const tbody = document.querySelector("#p4_tbl tbody");
+        tbody.innerHTML = rows.length ? rows.map(r => `
+          <tr>
+            <td>${esc(r.host)}</td>
+            <td>${esc(r.part_code)}</td>
+            <td>${esc(r.spec)}</td>
+            <td>${esc(r.description)}</td>
+            <td>${esc(r.note)}</td>
+            <td>${esc(r.stock_qty)}</td>
+          </tr>
+        `).join("") : `<tr><td colspan="6" style="color:#5b6b85;">${esc(res.msg || "查無資料")}</td></tr>`;
+
+        setMsg("p4", rows.length ? "ok" : "error", res.msg || (rows.length ? "查詢完成" : "查無資料"));
+        return;
+      }
+
+      if (panelId === "p5"){
+        const q = document.getElementById("p5_q").value.trim();
+        const url = API_BASE + "?" + qs({ action:"camera_spare_lookup", q });
+        const res = await jsonp(url);
+
+        if (!res.ok) throw new Error(res.msg || "API error");
+        const rows = Array.isArray(res.rows) ? res.rows : [];
+        const tbody = document.querySelector("#p5_tbl tbody");
+        tbody.innerHTML = rows.length ? rows.map(r => `
+          <tr>
+            <td>${esc(r.camera)}</td>
+            <td>${esc(r.part_code)}</td>
+            <td>${esc(r.part_model)}</td>
+            <td>${esc(r.description)}</td>
+            <td>${esc(r.note)}</td>
+            <td>${esc(r.stock_qty)}</td>
+          </tr>
+        `).join("") : `<tr><td colspan="6" style="color:#5b6b85;">${esc(res.msg || "查無資料")}</td></tr>`;
+
+        setMsg("p5", rows.length ? "ok" : "error", res.msg || (rows.length ? "查詢完成" : "查無資料"));
+        return;
+      }
+
+      setMsg(panelId, "error", "未知的 panelId");
+
+    } catch (err) {
+      setMsg(panelId, "error", "查詢失敗：" + (err.message || err));
+    }
+  }
+
+  // HTML escape
+  function esc(v){
+    const s = String(v == null ? "" : v);
+    return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  }
+</script>
+// JavaScript Document
+</head>
+
+<body>
+  <!-- ✅ Header：刪掉上方分頁標題，只留一行主標題 -->
+  <header class="topbar">
+    <div class="wrap">
+      <div>
+        <div class="brand-title" id="pageTitle">TECOM｜外購品產品 / 備品查詢系統（維修人員專用）</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page">
+    <aside class="sidebar">
+      <!-- ✅ 已刪除「業助 / 維修人員查詢頁」那顆 -->
+
+      <nav class="menu" id="menu">
+        <button class="active" data-panel="p1">產品料號 / 型號查詢</button>
+        <button data-panel="p2">產品序號 / MAC 查詢</button>
+        <button data-panel="p3">監控主機主板查詢</button>
+        <button data-panel="p4">監控主機變壓器查詢</button>
+        <button data-panel="p5">監控攝影機備品查詢</button>
+      </nav>
+
+      <div class="hint">
+        先完成 UI 骨架與欄位呈現，下一步再串 Apps Script 查詢 API（回傳 JSON）。
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- Panel 1 -->
+      <section class="card panel active" id="p1">
+        <div class="bar" data-bar>產品料號 / 型號查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入料號（product_code 或 ERP 料號）</label>
+              <input id="p1_code" placeholder="例：271-001022R 或 671-502633R 或 S99XXA0102" />
+            </div>
+            <div>
+              <label>輸入型號（model_no）</label>
+              <input id="p1_model" placeholder="例：TE-XSC0A051-N" />
+            </div>
+            <div>
+              <button class="btn" onclick="realSearch('p1')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p1_msg">請輸入任一欄位再查詢。</div>
+
+          <div class="section-title">查詢結果如下：</div>
+          <div class="kv" id="p1_kv">
+            <div class="k">產品料號</div><div class="v">—</div>
+            <div class="k">產品型號</div><div class="v">—</div>
+            <div class="k">供應商號</div><div class="v">—</div>
+            <div class="k">中文名稱</div><div class="v">—</div>
+            <div class="k">備註</div><div class="v">—</div>
+          </div>
+
+          <div class="section-title">維修備品資訊：</div>
+          <table id="p1_tbl">
+            <thead>
+              <tr>
+                <th style="width:120px;">項目</th>
+                <th>料號</th>
+                <th>型號</th>
+                <th>說明</th>
+                <th>備註</th>
+                <th style="width:90px;">庫存</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="6" style="color:#5b6b85;">尚未查詢（目前為 UI Mock）</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="footer-note">下一步串 API 後，這裡會顯示 ProductMaster + ProductBOM + Stock（主板/電源/備品）結果。</div>
+        </div>
+      </section>
+
+      <!-- Panel 2 -->
+      <section class="card panel" id="p2">
+        <div class="bar" data-bar>產品序號 / MAC 查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入序號（serial_no）</label>
+              <input id="p2_sn" placeholder="例：RX2K00001 或 RP3E01165..." />
+            </div>
+            <div>
+              <label>輸入 MAC（選填）</label>
+              <input id="p2_mac" placeholder="例：00:11:22:33:44:55" />
+            </div>
+            <div>
+              <button class="btn" onclick="realSearch('p2')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p2_msg">可用序號查：出貨客戶 / 出貨日期 / 型號 / MAC。</div>
+
+          <div class="section-title">查詢結果如下：</div>
+          <div class="kv" id="p2_kv">
+            <div class="k">序號</div><div class="v">—</div>
+            <div class="k">型號</div><div class="v">—</div>
+            <div class="k">出貨日期</div><div class="v">—</div>
+            <div class="k">出貨客戶</div><div class="v">—</div>
+            <div class="k">出貨單號</div><div class="v">—</div>
+            <div class="k">MAC</div><div class="v">—</div>
+          </div>
+
+          <div class="footer-note">
+            若查詢不到序號出貨紀錄，可能原因：備品更換/換機導致序號未落在原出貨資料中，建議再以料號/型號或出貨單號交叉查詢。
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 3 -->
+      <section class="card panel" id="p3">
+        <div class="bar" data-bar>監控主機主板查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入主機料號 / 型號</label>
+              <input id="p3_q" placeholder="例：271-001022R 或 TE-XSC0A051-N" />
+            </div>
+            <div></div>
+            <div>
+              <button class="btn" onclick="realSearch('p3')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p3_msg">查詢後顯示對應主板料號 / 型號 / 庫存。</div>
+
+          <div class="section-title">主板對應結果：</div>
+          <table id="p3_tbl">
+            <thead>
+              <tr>
+                <th style="width:140px;">主機</th>
+                <th>主板料號</th>
+                <th>主板型號</th>
+                <th>說明</th>
+                <th>備註</th>
+                <th style="width:90px;">庫存</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢（目前為 UI Mock）</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel 4 -->
+      <section class="card panel" id="p4">
+        <div class="bar" data-bar>監控主機變壓器查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入主機料號 / 型號</label>
+              <input id="p4_q" placeholder="例：271-001022R 或 TE-XSC0A051-N" />
+            </div>
+            <div></div>
+            <div>
+              <button class="btn" onclick="realSearch('p4')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p4_msg">查詢後顯示對應變壓器料號 / 規格 / 庫存。</div>
+
+          <div class="section-title">變壓器對應結果：</div>
+          <table id="p4_tbl">
+            <thead>
+              <tr>
+                <th style="width:140px;">主機</th>
+                <th>變壓器料號</th>
+                <th>規格</th>
+                <th>說明</th>
+                <th>備註</th>
+                <th style="width:90px;">庫存</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢（目前為 UI Mock）</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel 5 -->
+      <section class="card panel" id="p5">
+        <div class="bar" data-bar>監控攝影機備品查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入攝影機料號 / 型號</label>
+              <input id="p5_q" placeholder="例：671-502616R 或 TE-IPB60505F36-MWI" />
+            </div>
+            <div></div>
+            <div>
+              <button class="btn" onclick="realSearch('p5')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p5_msg">查詢後顯示攝影機對應備品與庫存。</div>
+
+          <div class="section-title">備品清單：</div>
+          <table id="p5_tbl">
+            <thead>
+              <tr>
+                <th style="width:140px;">攝影機</th>
+                <th>備品料號</th>
+                <th>備品型號</th>
+                <th>說明</th>
+                <th>備註</th>
+                <th style="width:90px;">庫存</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢（目前為 UI Mock）</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ✅ Footer（你原本要的內容） -->
+  <footer style="max-width:1200px;margin:0 auto 28px;padding:0 18px;">
+    <div style="
+      background:#ffffff;
+      border:1px solid #d7e2f3;
+      border-radius:14px;
+      padding:12px 14px;
+      color:#5b6b85;
+      font-size:12.5px;
+      box-shadow:0 6px 16px rgba(15,23,42,.06);
+    ">
+      本查詢頁僅供 CCTV／PoE Switch 外購品維修備品查詢使用。若系統程式有任何問題，請洽分機 2216（安安）。
+    </div>
+  </footer>
+
+  <script>
+    // ✅ 分頁切換：更穩 + 右側藍條與分頁聯動（p1 也會同步）
+    document.addEventListener("DOMContentLoaded", () => {
+      const menu = document.getElementById("menu");
+      if (!menu) return;
+
+      const buttons = Array.from(menu.querySelectorAll("button[data-panel]"));
+
+      function activate(panelId) {
+        // buttons active
+        buttons.forEach(b => b.classList.toggle("active", b.dataset.panel === panelId));
+
+        // panels show/hide
+        document.querySelectorAll(".panel").forEach(p => {
+          p.classList.toggle("active", p.id === panelId);
+        });
+
+        // 分頁名稱
+        const btn = buttons.find(b => b.dataset.panel === panelId);
+        const titleText = btn ? btn.textContent.trim() : "";
+
+        // ✅ 右側藍條標題跟分頁聯動（只更新目前頁）
+        const panelEl = document.getElementById(panelId);
+        const barEl = panelEl ? panelEl.querySelector("[data-bar]") : null;
+        if (barEl && titleText) barEl.textContent = titleText;
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      buttons.forEach(btn => btn.addEventListener("click", () => activate(btn.dataset.panel)));
+
+      const defaultPanel = (buttons.find(b => b.classList.contains("active")) || buttons[0])?.dataset.panel;
+      if (defaultPanel) activate(defaultPanel);
+    });
+
+    // Mock search（UI only）
+    function mockSearch(panelId){
+      const msg = document.getElementById(panelId + "_msg");
+      if (msg) {
+        msg.className = "msg ok";
+        msg.textContent = "（UI 測試）已按下查詢。下一步會串接 Apps Script API 回傳資料。";
+      }
+
+      if(panelId === "p1"){
+        const kv = document.getElementById("p1_kv")?.children;
+        if (kv && kv.length >= 10) {
+          kv[1].textContent = "271-001022R";
+          kv[3].textContent = "TE-XSC0A051-N";
+          kv[5].textContent = "RS-D8104HR-NS-T";
+          kv[7].textContent = "5MPLite 混合型高清錄影主機";
+          kv[9].textContent = "聯詠一代板 / 場內組裝";
+        }
+        const tbody = document.querySelector("#p1_tbl tbody");
+        if (tbody) {
+          tbody.innerHTML = `
+            <tr>
+              <td>主板</td><td>671-502647R</td><td>RS-DM-444B</td><td>維修價 2,000 元</td><td></td><td>—</td>
+            </tr>
+            <tr>
+              <td>電源</td><td>S99XXA0122</td><td>CS-1202000-DC</td><td>12V2A（DC-jack）</td><td></td><td>—</td>
+            </tr>`;
+        }
+      }
+
+      if(panelId === "p2"){
+        const kv = document.getElementById("p2_kv")?.children;
+        if (kv && kv.length >= 12) {
+          kv[1].textContent = "RX2K00001";
+          kv[3].textContent = "TE-XSC0A051-N";
+          kv[5].textContent = "2026/01/12";
+          kv[7].textContent = "佳音通信";
+          kv[9].textContent = "HSS2610002";
+          kv[11].textContent = "00:11:22:33:44:55";
+        }
+      }
+    }
+  </script>
+</body>
+</html>
