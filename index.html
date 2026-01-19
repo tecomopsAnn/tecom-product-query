@@ -253,7 +253,7 @@
 
   <script>
     // ✅ 這裡填你部署 Web App 的 exec URL（保持你目前這個）
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyz9SOAT_DiPpKTQkSE8lCDdjHkWZWUh5555pNYAkU0M4l3ZuU3-NmUSyOtyp3al7OGgQ/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbycx_DiuaZofeMqr3-EODL1Rp_9e6SOtc9Iud1Szz8rDYinCh0fHUbjzQ97MImN7wJj-Q/exec";
 
     /** JSONP helper（避開 CORS） */
     function jsonp(url){
@@ -489,6 +489,136 @@
         setMsg(panelId, "error", "查詢失敗：" + (err && err.message ? err.message : String(err)));
       }
     }
+
+    function p6SetSummary(s){
+  const kv = document.getElementById("p6_summary").children;
+  if (!s){
+    kv[1].textContent = "—";
+    kv[3].textContent = "—";
+    kv[5].textContent = "—";
+    kv[7].textContent = "—";
+    return;
+  }
+  kv[1].textContent = s.in_stock_qty ?? "0";
+  kv[3].textContent = s.used_qty ?? "0";
+  kv[5].textContent = s.scrap_qty ?? "0";
+  kv[7].textContent = s.last_update ?? "—";
+}
+
+async function p6LookupModel(){
+  const code = document.getElementById("p6_code").value.trim();
+  if (!code) return;
+
+  try{
+    setMsg("p6", "", "查詢型號中…");
+    const url = API_BASE + "?" + qs({ action:"product_lookup", code });
+    const res = await jsonp(url);
+    if (!res.ok) throw new Error(res.msg || "API error");
+
+    const model = (res.product && res.product.model_no) ? res.product.model_no : "";
+    document.getElementById("p6_model").value = model || "";
+    setMsg("p6", "ok", model ? "已帶出型號" : "查到料號，但型號欄位為空（請確認 ProductMaster）");
+  }catch(err){
+    setMsg("p6", "error", "型號帶出失敗：" + (err.message || err));
+  }
+}
+
+function p6AddRow(){
+  const tbody = document.querySelector("#p6_tbl tbody");
+  const code = document.getElementById("p6_code").value.trim();
+  if (!code){
+    setMsg("p6","error","請先輸入備品料號（product_code）再新增明細列");
+    return;
+  }
+
+  // 如果還是「尚未新增」那列，先清掉
+  if (tbody.children.length === 1 && tbody.children[0].children.length === 1){
+    tbody.innerHTML = "";
+  }
+
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input class="p6_sn" placeholder="例：RP3C00095" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+    <td><input class="p6_mac" placeholder="00:11:22:33:44:55" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+    <td><input class="p6_p2p" placeholder="P2P..." style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+    <td>
+      <select class="p6_status" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;">
+        <option value="IN_STOCK" selected>IN_STOCK</option>
+        <option value="USED">USED</option>
+        <option value="SCRAP">SCRAP</option>
+      </select>
+    </td>
+    <td><input class="p6_source" placeholder="採購補貨/客退/換修..." style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+    <td><input class="p6_note" placeholder="" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+    <td><button class="btn" style="min-width:unset;padding:8px 10px;background:linear-gradient(180deg,#ef4444,#dc2626);border-color:rgba(239,68,68,.35);" onclick="this.closest('tr').remove(); return false;">刪</button></td>
+  `;
+  tbody.appendChild(tr);
+  setMsg("p6","", "已新增一列，請填序號（必填）");
+}
+
+function p6Clear(){
+  const tbody = document.querySelector("#p6_tbl tbody");
+  tbody.innerHTML = `<tr><td colspan="7" style="color:#5b6b85;">尚未新增</td></tr>`;
+  p6SetSummary(null);
+  setMsg("p6","", "已清空本次明細");
+}
+
+async function p6Submit(){
+  const code = document.getElementById("p6_code").value.trim();
+  if (!code){
+    setMsg("p6","error","請先輸入備品料號");
+    return;
+  }
+
+  const tbody = document.querySelector("#p6_tbl tbody");
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+
+  // 若是「尚未新增」那列
+  if (rows.length === 1 && rows[0].children.length === 1){
+    setMsg("p6","error","請先新增至少一列明細");
+    return;
+  }
+
+  const items = rows.map(tr => {
+    const sn = tr.querySelector(".p6_sn")?.value?.trim() || "";
+    const mac = tr.querySelector(".p6_mac")?.value?.trim() || "";
+    const p2p = tr.querySelector(".p6_p2p")?.value?.trim() || "";
+    const status = tr.querySelector(".p6_status")?.value || "IN_STOCK";
+    const source = tr.querySelector(".p6_source")?.value?.trim() || "";
+    const note = tr.querySelector(".p6_note")?.value?.trim() || "";
+
+    return {
+      product_code: code,
+      serial_no: sn,
+      mac_addr: mac,
+      p2p_id: p2p,
+      status,
+      source,
+      note
+    };
+  }).filter(x => x.serial_no && x.product_code);
+
+  if (!items.length){
+    setMsg("p6","error","沒有有效資料：請確認每列都有填序號（serial_no）");
+    return;
+  }
+
+  try{
+    setMsg("p6","", "送出中…（會自動重算庫存彙總）");
+    const url = API_BASE + "?" + qs({ action:"spare_add", items: JSON.stringify(items) });
+    const res = await jsonp(url);
+    if (!res.ok) throw new Error(res.msg || "API error");
+
+    // 取回 summary（只顯示本次料號）
+    const s = Array.isArray(res.summary) ? res.summary.find(x => String(x.product_code||"").toUpperCase() === code.toUpperCase()) : null;
+    p6SetSummary(s || null);
+
+    setMsg("p6","ok", `已新增 ${res.added || items.length} 筆。`);
+  }catch(err){
+    setMsg("p6","error","送出失敗：" + (err.message || err));
+  }
+}
+
   </script>
 </head>
 
@@ -509,6 +639,8 @@
         <button data-panel="p3">監控主機主板查詢</button>
         <button data-panel="p4">監控主機變壓器查詢</button>
         <button data-panel="p5">監控攝影機備品查詢</button>
+        <button data-panel="p6">備品補貨 / 入庫</button>
+
       </nav>
 
       <div class="hint">
@@ -712,6 +844,64 @@
           </table>
         </div>
       </section>
+
+      <!-- Panel 6 -->
+<section class="card panel" id="p6">
+  <div class="bar" data-bar>備品補貨 / 入庫</div>
+  <div class="body">
+    <div class="grid" style="grid-template-columns: 1fr 1fr auto;">
+      <div>
+        <label>備品料號（product_code）</label>
+        <input id="p6_code" placeholder="例：671-502609R" onblur="p6LookupModel()" />
+      </div>
+      <div>
+        <label>型號（model_no，系統帶出）</label>
+        <input id="p6_model" placeholder="自動帶出" disabled />
+      </div>
+      <div>
+        <button class="btn" onclick="p6AddRow()">＋新增一列</button>
+      </div>
+    </div>
+
+    <div class="msg" id="p6_msg">輸入料號後會自動帶出型號；按「新增一列」可連續輸入多筆備品。</div>
+
+    <div class="section-title">本次補貨明細</div>
+    <table id="p6_tbl">
+      <thead>
+        <tr>
+          <th style="width:140px;">序號 serial_no</th>
+          <th>MAC</th>
+          <th>P2P</th>
+          <th style="width:130px;">狀態</th>
+          <th style="width:160px;">來源（選填）</th>
+          <th>備註（選填）</th>
+          <th style="width:70px;">刪除</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="7" style="color:#5b6b85;">尚未新增</td></tr>
+      </tbody>
+    </table>
+
+    <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+      <button class="btn" onclick="p6Submit()">送出入庫</button>
+      <button class="btn" style="background:linear-gradient(180deg,#64748b,#475569);border-color:rgba(100,116,139,.35);" onclick="p6Clear()">清空本次明細</button>
+    </div>
+
+    <div class="section-title">目前庫存（系統彙總）</div>
+    <div class="kv" id="p6_summary">
+      <div class="k">在庫 IN_STOCK</div><div class="v">—</div>
+      <div class="k">已使用 USED</div><div class="v">—</div>
+      <div class="k">報廢 SCRAP</div><div class="v">—</div>
+      <div class="k">最後更新</div><div class="v">—</div>
+    </div>
+
+    <div class="footer-note">
+      說明：送出後資料會寫入 SpareItemLog，並自動重算 SpareStockSummary（以狀態加總）。
+    </div>
+  </div>
+</section>
+
     </main>
   </div>
 
@@ -730,6 +920,7 @@
   </footer>
 </body>
 </html>
+
 
 
 
