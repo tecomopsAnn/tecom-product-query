@@ -253,7 +253,7 @@
 
   <script>
     // ✅ 這裡填你部署 Web App 的 exec URL（保持你目前這個）
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyvTUSDL8YCpWaIg2DNT1CH0jbCGiX47_UkLcZgVm2YvMoMjZUvcEvU8dQPDbzpBS1oJQ/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbyz9SOAT_DiPpKTQkSE8lCDdjHkWZWUh5555pNYAkU0M4l3ZuU3-NmUSyOtyp3al7OGgQ/exec";
 
     /** JSONP helper（避開 CORS） */
     function jsonp(url){
@@ -391,13 +391,15 @@
             return;
           }
 
-          const kv = document.getElementById("p2_kv").children;
-          kv[1].textContent = res.data.serial_no || "—";
-          kv[3].textContent = res.data.model_no || "—";
-          kv[5].textContent = res.data.ship_date || "—";
-          kv[7].textContent = res.data.customer_name || "—";
-          kv[9].textContent = res.data.ship_doc_no || "—";
-          kv[11].textContent = res.data.mac || "—";
+                    const kv = document.getElementById("p2_kv").children;
+                 kv[1].textContent  = res.data.serial_no || "—";
+                 kv[3].textContent  = res.data.model_no || "—";
+                 kv[5].textContent  = res.data.ship_date || "—";
+                 kv[7].textContent  = res.data.customer_name || "—";
+                 kv[9].textContent  = res.data.ship_doc_no || "—";
+                 kv[11].textContent = res.data.mac_addr || "—";
+                 kv[13].textContent = res.data.p2p_id || "—";
+                 
 
           setMsg("p2", "ok", "查詢完成");
           return;
@@ -587,13 +589,15 @@
 
           <div class="section-title">查詢結果如下：</div>
           <div class="kv" id="p2_kv">
-            <div class="k">序號</div><div class="v">—</div>
-            <div class="k">型號</div><div class="v">—</div>
-            <div class="k">出貨日期</div><div class="v">—</div>
-            <div class="k">出貨客戶</div><div class="v">—</div>
-            <div class="k">出貨單號</div><div class="v">—</div>
-            <div class="k">MAC</div><div class="v">—</div>
+              <div class="k">序號</div><div class="v">—</div>
+              <div class="k">型號</div><div class="v">—</div>
+              <div class="k">出貨日期</div><div class="v">—</div>
+              <div class="k">出貨客戶</div><div class="v">—</div>
+              <div class="k">出貨單號</div><div class="v">—</div>
+              <div class="k">MAC</div><div class="v">—</div>
+              <div class="k">P2P</div><div class="v">—</div>
           </div>
+
 
           <div class="footer-note">
             若查不到序號出貨紀錄，可能是備品更換/換機造成序號未落在原出貨資料中，建議再用料號/型號/出貨單交叉查詢。
@@ -726,5 +730,6 @@
   </footer>
 </body>
 </html>
+
 
 
