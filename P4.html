@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TECOM｜P4 維修查詢（區域／型號／序號）</title>
+  <style>
+    :root{ --bg:#f6f8fb; --card:#fff; --bd:#dbe3ef; --txt:#0f172a; --muted:#64748b; --brand:#0b3a67; }
+    *{ box-sizing:border-box; font-family:system-ui,-apple-system,"Noto Sans TC",Arial; }
+    body{ margin:0; background:var(--bg); color:var(--txt); }
+    .topbar{ background:var(--brand); color:#fff; padding:14px 18px; font-weight:900; }
+    .wrap{ display:flex; gap:16px; padding:16px; max-width:1100px; margin:0 auto; }
+    .nav{ width:290px; background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:12px; }
+    .nav a{ display:block; padding:12px 12px; border-radius:10px; color:var(--txt); text-decoration:none; margin:6px 0; border:1px solid transparent; font-weight:700; }
+    .nav a:hover{ border-color:var(--bd); background:#f2f6ff; }
+    .nav a.active{ border-color:#8ab4ff; background:#eaf2ff; font-weight:900; }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.6; margin-top:10px; padding:8px 10px; }
+    .card{ flex:1; background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:16px; }
+    .title{ font-size:18px; font-weight:900; margin:0 0 10px; }
+    .grid{ display:grid; grid-template-columns:1.1fr 1.2fr auto auto; gap:10px; align-items:end; }
+    label{ display:block; font-size:13px; color:var(--muted); margin:0 0 6px; }
+    input, select{ width:100%; padding:10px 12px; border:1px solid var(--bd); border-radius:10px; font-size:14px; background:#fff; }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid var(--bd); background:#fff; font-weight:900; cursor:pointer; }
+    .btn.primary{ background:#2563eb; border-color:#2563eb; color:#fff; }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; }
+    .status{ margin-top:10px; padding:10px 12px; border:1px dashed var(--bd); border-radius:10px; color:var(--muted); font-size:13px; white-space:pre-line; }
+    table{ width:100%; border-collapse:separate; border-spacing:0; margin-top:12px; border:1px solid var(--bd); border-radius:12px; overflow:hidden; }
+    thead th{ background:#f1f5ff; text-align:left; font-size:13px; padding:10px; border-bottom:1px solid var(--bd); }
+    tbody td{ font-size:13px; padding:10px; border-bottom:1px solid #eef2f7; vertical-align:top; }
+    tbody tr:last-child td{ border-bottom:none; }
+    .pill{ display:inline-block; padding:2px 8px; border:1px solid var(--bd); border-radius:999px; font-size:12px; color:var(--muted); }
+    .mono{ font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .link{ color:#2563eb; text-decoration:none; }
+    .link:hover{ text-decoration:underline; }
+    .section{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--bd); }
+    @media (max-width: 900px){
+      .wrap{ flex-direction:column; }
+      .nav{ width:auto; }
+      .grid{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">TECOM｜外購品產品／備品查詢系統（維修人員專用）</div>
+
+  <div class="wrap">
+    <nav class="nav">
+      <a href="./index.html">1　產品料號／型號查詢</a>
+      <a href="./p2.html">2　產品序號／MAC 查詢</a>
+      <a href="./p3.html">3　維修回報（含上傳）</a>
+      <a class="active" href="./p4.html">4　維修查詢（區域／型號／序號）</a>
+      <a href="./p5.html">5　監控攝影機備品查詢</a>
+      <div class="hint">
+        本頁提供三種查詢入口：<br>
+        1) 區域：列出該區全部維修（最新在上）<br>
+        2) 型號：查某型號的維修狀況<br>
+        3) 序號：查某序號的維修軌跡
+      </div>
+    </nav>
+
+    <section class="card">
+      <h1 class="title">P4 維修查詢（區域／型號／序號）</h1>
+
+      <div class="grid">
+        <div>
+          <label>依區域查詢（列出該區全部維修）</label>
+          <select id="qRegion">
+            <option value="">請選擇</option>
+            <option>北區</option><option>中區</option><option>南區</option><option>新竹</option>
+          </select>
+        </div>
+
+        <div>
+          <label>依型號查詢（model_no）</label>
+          <input id="qModel" placeholder="例：TE-IPB60505F36-M" />
+        </div>
+
+        <button class="btn primary" id="btnRegion">查區域</button>
+        <button class="btn" id="btnModel">查型號</button>
+
+        <div style="grid-column:1/-1;">
+          <label>依序號查詢（serial_no，同一台所有維修紀錄）</label>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <input id="qSerial" placeholder="例：RP4L00339" style="flex:1; min-width:240px;" />
+            <button class="btn" id="btnSerial">查序號</button>
+            <button class="btn" id="btnReload">重新讀取資料</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="status" class="status">狀態：尚未查詢（請先按「重新讀取資料」或直接查詢）</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>repair_id</th>
+            <th>收件日</th>
+            <th>區域</th>
+            <th>工程師</th>
+            <th>維修項目</th>
+            <th>料號 / 型號</th>
+            <th>序號</th>
+            <th>客戶</th>
+            <th>狀態 / 圖片</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="9" style="color:#64748b;">尚未查詢</td></tr>
+        </tbody>
+      </table>
+
+      <div class="hint section">
+        小提醒：Drive 不公開時，圖片連結需要登入才看得到（但仍會顯示連結）。<br>
+        若你未來要做「可改狀態 / 關單」建議把 P4 也搬到 Apps Script（同專案即可）。
+      </div>
+    </section>
+  </div>
+
+<script>
+  // ====== 你只要改這兩行 ======
+  const SPREADSHEET_ID = '154AxBJyOii51_ZTHME6Y9AGpGbV1E4LST93DNKFWmss';
+  const SHEET_NAME = 'RepairLog_View'; // 或 'RepairLog'
+  // ============================
+
+  const $ = (id) => document.getElementById(id);
+  const statusEl = $('status');
+  const tbody = $('tbody');
+
+  let rows = []; // 全部資料（已轉成 object）
+  let header = [];
+
+  const COLS = {
+    repair_id: 'repair_id',
+    receive_date: 'receive_date',
+    region: 'region',
+    engineer: 'engineer',
+    repair_category: 'repair_category',
+    product_code: 'product_code',
+    model_no: 'model_no',
+    serial_no: 'serial_no',
+    customer_name: 'customer_name',
+    status: 'status',
+    media_urls: 'media_urls',
+    created_at: 'created_at'
+  };
+
+  function gvizUrl(){
+    const base = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SPREADSHEET_ID)}/gviz/tq`;
+    const params = new URLSearchParams({
+      tqx: 'out:json',
+      sheet: SHEET_NAME
+    });
+    return `${base}?${params.toString()}`;
+  }
+
+  function setStatus(text){ statusEl.textContent = text; }
+
+  function parseGviz(text){
+    // gviz 回傳像：google.visualization.Query.setResponse({...});
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    const json = JSON.parse(text.slice(start, end + 1));
+    return json;
+  }
+
+  function toObjects(gviz){
+    const cols = gviz.table.cols.map(c => (c.label || '').trim());
+    const data = (gviz.table.rows || []).map(r => {
+      const o = {};
+      cols.forEach((k, i) => {
+        const cell = r.c[i];
+        o[k] = cell ? (cell.f ?? cell.v ?? '') : '';
+      });
+      return o;
+    });
+    return { cols, data };
+  }
+
+  function toDateValue(v){
+    // receive_date 可能是 '2026/01/26' 或 Date 文字；created_at 可能是時間戳
+    // 盡量轉成可排序的 timestamp
+    if (!v) return 0;
+    if (typeof v === 'number') return v;
+    const s = String(v).trim();
+
+    // gviz 可能回 Date(2026,0,26)
+    const m = s.match(/Date\((\d+),(\d+),(\d+)/);
+    if (m) return new Date(Number(m[1]), Number(m[2]), Number(m[3])).getTime();
+
+    // 常見 yyyy-mm-dd / yyyy/mm/dd
+    const s2 = s.replaceAll('/', '-');
+    const t = Date.parse(s2);
+    if (!Number.isNaN(t)) return t;
+
+    return 0;
+  }
+
+  function sortLatestFirst(list){
+    return list.slice().sort((a,b) => {
+      // 優先用 created_at，沒有就用 receive_date
+      const ta = toDateValue(a[COLS.created_at]) || toDateValue(a[COLS.receive_date]);
+      const tb = toDateValue(b[COLS.created_at]) || toDateValue(b[COLS.receive_date]);
+      return tb - ta;
+    });
+  }
+
+  function pick(o, key){ return (o && o[key] != null) ? String(o[key]) : ''; }
+
+  function render(list){
+    if (!list.length){
+      tbody.innerHTML = `<tr><td colspan="9" style="color:#64748b;">查無資料</td></tr>`;
+      return;
+    }
+
+    const html = list.map(r => {
+      const repairId = pick(r, COLS.repair_id);
+      const receive = pick(r, COLS.receive_date);
+      const region = pick(r, COLS.region);
+      const eng = pick(r, COLS.engineer);
+      const cat = pick(r, COLS.repair_category);
+      const pcode = pick(r, COLS.product_code);
+      const model = pick(r, COLS.model_no);
+      const serial = pick(r, COLS.serial_no);
+      const cust = pick(r, COLS.customer_name);
+      const stat = pick(r, COLS.status);
+      const media = pick(r, COLS.media_urls);
+
+      const mediaLinks = media
+        ? media.split('\n').filter(Boolean).slice(0,3).map((u, i) =>
+            `<a class="link" href="${u}" target="_blank" rel="noreferrer">圖片${i+1}</a>`
+          ).join(' ')
+        : `<span class="pill">無</span>`;
+
+      return `
+        <tr>
+          <td class="mono">${escapeHtml(repairId)}</td>
+          <td>${escapeHtml(receive)}</td>
+          <td>${escapeHtml(region)}</td>
+          <td>${escapeHtml(eng)}</td>
+          <td>${escapeHtml(cat)}</td>
+          <td><div class="mono">${escapeHtml(pcode)}</div><div>${escapeHtml(model)}</div></td>
+          <td class="mono">${escapeHtml(serial)}</td>
+          <td>${escapeHtml(cust)}</td>
+          <td><div class="pill">${escapeHtml(stat || '—')}</div><div style="margin-top:6px;">${mediaLinks}</div></td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.innerHTML = html;
+  }
+
+  function escapeHtml(s){
+    return String(s ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#39;');
+  }
+
+  async function loadData(){
+    setStatus('狀態：讀取 RepairLog 資料中…');
+    const resp = await fetch(gvizUrl(), { cache: 'no-store' });
+    const text = await resp.text();
+    const gviz = parseGviz(text);
+    const { cols, data } = toObjects(gviz);
+
+    header = cols;
+    rows = data;
+
+    setStatus(`狀態：資料已載入（${rows.length} 筆）`);
+  }
+
+  function filterByRegion(region){
+    const list = rows.filter(r => pick(r, COLS.region).trim() === region);
+    return sortLatestFirst(list);
+  }
+
+  function filterByModel(model){
+    const q = model.trim().toLowerCase();
+    const list = rows.filter(r => pick(r, COLS.model_no).trim().toLowerCase().includes(q));
+    return sortLatestFirst(list);
+  }
+
+  function filterBySerial(serial){
+    const q = serial.trim().toLowerCase();
+    const list = rows.filter(r => pick(r, COLS.serial_no).trim().toLowerCase() === q);
+    return sortLatestFirst(list);
+  }
+
+  // ===== events =====
+  $('btnReload').addEventListener('click', async () => {
+    try{
+      await loadData();
+      render([]);
+    }catch(e){
+      setStatus('狀態：讀取失敗：' + String(e));
+      tbody.innerHTML = `<tr><td colspan="9" style="color:#991b1b;">讀取失敗</td></tr>`;
+    }
+  });
+
+  $('btnRegion').addEventListener('click', async () => {
+    try{
+      if (!rows.length) await loadData();
+      const region = $('qRegion').value.trim();
+      if (!region){ setStatus('請先選擇區域'); return; }
+      const list = filterByRegion(region);
+      setStatus(`區域查詢：${region}（${list.length} 筆，最新在上）`);
+      render(list);
+    }catch(e){
+      setStatus('查詢失敗：' + String(e));
+    }
+  });
+
+  $('btnModel').addEventListener('click', async () => {
+    try{
+      if (!rows.length) await loadData();
+      const model = $('qModel').value.trim();
+      if (!model){ setStatus('請輸入型號關鍵字'); return; }
+      const list = filterByModel(model);
+      setStatus(`型號查詢：${model}（${list.length} 筆，最新在上）`);
+      render(list);
+    }catch(e){
+      setStatus('查詢失敗：' + String(e));
+    }
+  });
+
+  $('btnSerial').addEventListener('click', async () => {
+    try{
+      if (!rows.length) await loadData();
+      const serial = $('qSerial').value.trim();
+      if (!serial){ setStatus('請輸入序號'); return; }
+      const list = filterBySerial(serial);
+      setStatus(`序號查詢：${serial}（${list.length} 筆，最新在上）`);
+      render(list);
+    }catch(e){
+      setStatus('查詢失敗：' + String(e));
+    }
+  });
+
+</script>
+</body>
+</html>
