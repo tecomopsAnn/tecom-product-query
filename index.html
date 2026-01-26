@@ -25,8 +25,14 @@
       --shadow2: 0 6px 16px rgba(15, 23, 42, .06);
       --font: "Microsoft JhengHei", system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans TC", Arial, sans-serif;
     }
+
     *{ box-sizing:border-box; }
-    body{ margin:0; font-family:var(--font); background:var(--bg); color:var(--text); }
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:var(--bg);
+      color:var(--text);
+    }
 
     .topbar{
       background:linear-gradient(90deg, var(--brand), var(--brand-2));
@@ -38,10 +44,19 @@
       box-shadow:0 4px 16px rgba(0,0,0,.12);
     }
     .topbar .wrap{
-      max-width:1200px; margin:0 auto;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      max-width:1200px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
-    .brand-title{ font-size:18px; font-weight:900; letter-spacing:.2px; line-height:1.25; }
+    .brand-title{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:.2px;
+      line-height:1.25;
+    }
 
     .page{
       max-width:1200px;
@@ -51,7 +66,9 @@
       grid-template-columns: 260px 1fr;
       gap:18px;
     }
-    @media (max-width: 980px){ .page{ grid-template-columns: 1fr; } }
+    @media (max-width: 980px){
+      .page{ grid-template-columns: 1fr; }
+    }
 
     .sidebar{
       background:var(--card);
@@ -60,7 +77,13 @@
       box-shadow:var(--shadow2);
       overflow:hidden;
     }
-    .menu{ padding:10px 8px 8px; display:flex; flex-direction:column; gap:6px; }
+
+    .menu{
+      padding:10px 8px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
     .menu button{
       border:1px solid transparent;
       background:transparent;
@@ -73,13 +96,17 @@
       font-size:14px;
       transition:.15s ease;
     }
-    .menu button:hover{ background:#f1f6ff; border-color:var(--line); }
+    .menu button:hover{
+      background:#f1f6ff;
+      border-color:var(--line);
+    }
     .menu button.active{
       background:linear-gradient(180deg, #eaf2ff, #ffffff);
       border-color:var(--line);
       color:var(--brand);
       box-shadow:0 2px 0 rgba(11,58,117,.08) inset;
     }
+
     .hint{
       padding:10px 14px 14px;
       color:var(--muted);
@@ -87,7 +114,11 @@
       border-top:1px solid var(--line);
     }
 
-    .main{ display:flex; flex-direction:column; gap:14px; }
+    .main{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
     .card{
       background:var(--card);
       border:1px solid var(--line);
@@ -102,7 +133,9 @@
       font-weight:900;
       letter-spacing:.3px;
     }
-    .card .body{ padding:16px; }
+    .card .body{
+      padding:16px;
+    }
 
     .grid{
       display:grid;
@@ -110,9 +143,17 @@
       gap:10px;
       align-items:end;
     }
-    @media (max-width: 760px){ .grid{ grid-template-columns: 1fr; } }
+    @media (max-width: 760px){
+      .grid{ grid-template-columns: 1fr; }
+    }
 
-    label{ display:block; font-size:12.5px; color:var(--muted); margin-bottom:6px; font-weight:800; }
+    label{
+      display:block;
+      font-size:12.5px;
+      color:var(--muted);
+      margin-bottom:6px;
+      font-weight:800;
+    }
     input, select, textarea{
       width:100%;
       padding:11px 12px;
@@ -124,6 +165,7 @@
       font-family:var(--font);
     }
     textarea{ min-height:92px; resize:vertical; }
+
     input:focus, select:focus, textarea:focus{
       border-color:#9dc0ff;
       box-shadow:0 0 0 4px rgba(27,119,255,.12);
@@ -165,7 +207,12 @@
     .msg.error{ color:var(--danger); font-weight:900; }
     .msg.ok{ color:var(--ok); font-weight:900; }
 
-    .section-title{ margin:12px 0 8px; font-weight:900; color:var(--brand); font-size:16px; }
+    .section-title{
+      margin:12px 0 8px;
+      font-weight:900;
+      color:var(--brand);
+      font-size:16px;
+    }
 
     .kv{
       display:grid;
@@ -204,11 +251,21 @@
     }
     tr:last-child td{ border-bottom:none; }
 
-    .footer-note{ margin-top:10px; font-size:12px; color:var(--muted); }
+    .footer-note{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
     .panel{ display:none; }
     .panel.active{ display:block; }
 
-    .thumbs{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .thumbs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
     .thumb{
       width:86px; height:86px;
       border-radius:12px;
@@ -221,8 +278,11 @@
       box-shadow:0 6px 16px rgba(15,23,42,.06);
       text-decoration:none;
     }
-    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-
+    .thumb img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+    }
     .pill{
       display:inline-flex;
       align-items:center;
@@ -237,18 +297,26 @@
       text-decoration:none;
     }
 
-    .two-col{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 760px){ .two-col{ grid-template-columns:1fr; } }
+    .two-col{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 760px){
+      .two-col{ grid-template-columns:1fr; }
+    }
   </style>
 
   <script>
-    // ✅ 你的 WebApp exec URL（保持不變）
+    // ✅ 你的 WebApp exec URL
     const API_BASE = "https://script.google.com/macros/s/AKfycbwMLY5i8ZYW6YwnbiJijPqxECPoZR6ZJfHS3Ip5sjsIzECqrgcv--N0pN2_Aqt5RTQqmQ/exec";
 
+    // 上傳限制
     const MAX_PHOTOS = 5;
     const MAX_FILE_MB = 5;
     const MAX_VIDEO_SECONDS = 60;
 
+    /** JSONP helper（避開 CORS，用於查詢） */
     function jsonp(url){
       return new Promise((resolve, reject) => {
         const cbName = "cb_" + Math.random().toString(36).slice(2);
@@ -312,10 +380,18 @@
           const url = URL.createObjectURL(file);
           const v = document.createElement("video");
           v.preload = "metadata";
-          v.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(v.duration || 0); };
-          v.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+          v.onloadedmetadata = () => {
+            URL.revokeObjectURL(url);
+            resolve(v.duration || 0);
+          };
+          v.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(0);
+          };
           v.src = url;
-        }catch(e){ resolve(0); }
+        }catch(e){
+          resolve(0);
+        }
       });
     }
 
@@ -360,7 +436,7 @@
       if (p3_receive) p3_receive.value = todayISO();
     });
 
-    // ====== p1 / p2 / p5（查詢）=====
+    // ====== p1 / p2 / p5 ======
     async function realSearch(panelId){
       try {
         setMsg(panelId, "", "查詢中…");
@@ -453,7 +529,7 @@
       }
     }
 
-    // ====== p3：維修回報（含上傳）=====
+    // ====== p3：維修回報（POST 上傳）=====
     async function p3LookupModel(){
       const code = document.getElementById("p3_product_code").value.trim();
       if (!code) return;
@@ -570,8 +646,7 @@
           engineer: document.getElementById("p3_engineer").value,
           status: document.getElementById("p3_status").value,
 
-          // 你也可以改成登入帳號，我先固定留空讓你之後接
-          created_by: ""
+          created_by: "GitHubWeb"
         };
 
         if (!payload.product_code) { setMsg("p3","error","請輸入料號（必填）"); return; }
@@ -590,7 +665,6 @@
           fileObjs.push({
             name: f.name,
             mime: f.type || "application/octet-stream",
-            size: f.size,
             base64: b64
           });
         }
@@ -602,22 +676,23 @@
           body: JSON.stringify(payload)
         });
 
-        const json = await resp.json();
+        const json = await resp.json().catch(()=>null);
+
         if (json && json.ok){
           setMsg("p3","ok", `送出成功！維修單：${json.repair_id || "—"}`);
-
           document.getElementById("p4_sn").value = payload.serial_no;
           await p4SearchBySN();
           return;
         }
-        setMsg("p3","error", "送出失敗：" + (json?.msg || "未知錯誤"));
+
+        setMsg("p3","error","送出失敗：WebApp 未回傳 ok。請確認 Apps Script 已重新部署為可 POST 的版本。");
 
       }catch(err){
         setMsg("p3","error","送出失敗：" + (err && err.message ? err.message : String(err)));
       }
     }
 
-    // ====== p4：維修查詢 ======
+    // ====== p4：維修查詢（縮圖）=====
     function driveViewUrl(fileId){
       return `https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`;
     }
@@ -648,15 +723,15 @@
       return true;
     }
 
-    async function p4SearchBySN(){
+    async function p4SearchBySN(silent){
       const serial_no = document.getElementById("p4_sn").value.trim();
-      if (!serial_no){ setMsg("p4","error","請輸入序號"); return false; }
-      setMsg("p4","", "查詢中…");
+      if (!serial_no){ if(!silent) setMsg("p4","error","請輸入序號"); return false; }
+      if (!silent) setMsg("p4","", "查詢中…");
       const url = API_BASE + "?" + qs({ action:"repair_query", serial_no });
       const res = await jsonp(url);
-      if (!res.ok) { setMsg("p4","error", res.msg || "查詢失敗"); return false; }
+      if (!res.ok) { if(!silent) setMsg("p4","error", res.msg || "查詢失敗"); return false; }
       renderRepairRows_(res.rows || []);
-      setMsg("p4","ok", `查詢完成：${(res.rows||[]).length} 筆`);
+      if(!silent) setMsg("p4","ok", `查詢完成：${(res.rows||[]).length} 筆`);
       return (res.rows||[]).length > 0;
     }
 
@@ -669,13 +744,14 @@
 
       tbody.innerHTML = rows.map(r=>{
         const files = Array.isArray(r.files) ? r.files : [];
-        const imgs = files.filter(x => (x.mime||"").startsWith("image/"));
+        const imgs = files.filter(x => (x.mime||"").startsWith("image/") || !x.mime);
         const vids = files.filter(x => (x.mime||"").startsWith("video/"));
 
         const thumbs = imgs.slice(0,5).map(f=>{
           const u = driveViewUrl(f.id);
           const a = driveOpenUrl(f.id);
-          return `<a class="thumb" href="${a}" target="_blank" title="${esc(f.name||"")}"><img src="${u}" alt=""></a>`;
+          const t = f.name || "開啟";
+          return `<a class="thumb" href="${a}" target="_blank" title="${esc(t)}"><img src="${u}" alt=""></a>`;
         }).join("");
 
         const videoLink = vids.length
@@ -707,4 +783,339 @@
 <body>
   <header class="topbar">
     <div class="wrap">
-      <div><div class="brand-title">TECOM｜外購
+      <div>
+        <div class="brand-title">TECOM｜外購品產品 / 備品查詢系統（維修人員專用）</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page">
+    <aside class="sidebar">
+      <nav class="menu" id="menu">
+        <button class="active" data-panel="p1">產品料號 / 型號查詢</button>
+        <button data-panel="p2">產品序號 / MAC 查詢</button>
+        <button data-panel="p3">維修回報（含上傳）</button>
+        <button data-panel="p4">維修查詢（區域/型號/序號）</button>
+        <button data-panel="p5">監控攝影機備品查詢</button>
+      </nav>
+
+      <div class="hint">
+        本頁為維修備品查詢工具（GitHub Pages 前端 + Apps Script API）。<br/>
+        上傳檔案會存入指定 Drive 資料夾，查詢頁會顯示縮圖。
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- p1 -->
+      <section class="card panel active" id="p1">
+        <div class="bar" data-bar>產品料號 / 型號查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入料號（product_code 或 ERP 料號）</label>
+              <input id="p1_code" placeholder="例：271-001022R 或 671-502633R 或 S99XXA0102" />
+            </div>
+            <div>
+              <label>輸入型號（model_no）</label>
+              <input id="p1_model" placeholder="例：TE-XSC0A051-N" />
+            </div>
+            <div>
+              <button class="btn" onclick="realSearch('p1')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p1_msg">請輸入任一欄位再查詢。</div>
+
+          <div class="section-title">查詢結果如下：</div>
+          <div class="kv" id="p1_kv">
+            <div class="k">產品料號</div><div class="v">—</div>
+            <div class="k">產品型號</div><div class="v">—</div>
+            <div class="k">供應商號</div><div class="v">—</div>
+            <div class="k">中文名稱</div><div class="v">—</div>
+            <div class="k">備註</div><div class="v">—</div>
+          </div>
+
+          <div class="section-title">維修備品資訊：</div>
+          <table id="p1_tbl">
+            <thead>
+              <tr>
+                <th style="width:120px;">項目</th>
+                <th>料號</th>
+                <th>型號</th>
+                <th>說明</th>
+                <th>備註</th>
+                <th style="width:90px;">庫存</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢</td></tr>
+            </tbody>
+          </table>
+
+          <div class="footer-note">會顯示 ProductMaster + ProductBOM + 庫存（主板/電源/備品）結果。</div>
+        </div>
+      </section>
+
+      <!-- p2 -->
+      <section class="card panel" id="p2">
+        <div class="bar" data-bar>產品序號 / MAC 查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入序號（serial_no）</label>
+              <input id="p2_sn" placeholder="例：RP3C00095..." />
+            </div>
+            <div>
+              <label>輸入 MAC（選填）</label>
+              <input id="p2_mac" placeholder="例：00:11:22:33:44:55" />
+            </div>
+            <div>
+              <button class="btn" onclick="realSearch('p2')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p2_msg">可用序號查：出貨客戶 / 出貨日期 / 型號 / MAC / P2P。</div>
+
+          <div class="section-title">查詢結果如下：</div>
+          <div class="kv" id="p2_kv">
+            <div class="k">序號</div><div class="v">—</div>
+            <div class="k">型號</div><div class="v">—</div>
+            <div class="k">出貨日期</div><div class="v">—</div>
+            <div class="k">出貨客戶</div><div class="v">—</div>
+            <div class="k">出貨單號</div><div class="v">—</div>
+            <div class="k">MAC</div><div class="v">—</div>
+            <div class="k">P2P</div><div class="v">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- p3 -->
+      <section class="card panel" id="p3">
+        <div class="bar" data-bar>維修回報（含上傳）</div>
+        <div class="body">
+          <div class="two-col">
+            <div>
+              <label>維修項目（下拉）</label>
+              <select id="p3_item_type">
+                <option value="類比攝影機">類比攝影機</option>
+                <option value="網路攝影機">網路攝影機</option>
+                <option value="XVR">XVR</option>
+                <option value="NVR" selected>NVR</option>
+                <option value="POE SWITCH">POE SWITCH</option>
+              </select>
+            </div>
+            <div>
+              <label>區域（下拉）</label>
+              <select id="p3_region">
+                <option value="北" selected>北</option>
+                <option value="中">中</option>
+                <option value="南">南</option>
+                <option value="新竹">新竹</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="two-col" style="margin-top:10px;">
+            <div>
+              <label>料號（必填）</label>
+              <input id="p3_product_code" placeholder="例：671-502606R" />
+            </div>
+            <div style="display:flex; gap:10px; align-items:end;">
+              <div style="flex:1;">
+                <label>型號（由料號帶出）</label>
+                <input id="p3_model_no" placeholder="會自動帶出" readonly />
+              </div>
+              <button class="btn2" onclick="p3LookupModel()">帶出型號</button>
+            </div>
+          </div>
+
+          <div class="two-col" style="margin-top:10px;">
+            <div>
+              <label>產品序號（必填）</label>
+              <input id="p3_serial_no" placeholder="例：RP3E01165..." />
+            </div>
+            <div>
+              <label>維修單號（選填）</label>
+              <input id="p3_repair_no" placeholder="例：RMA-xxxxx 或 客戶單號" />
+            </div>
+          </div>
+
+          <div class="two-col" style="margin-top:10px;">
+            <div>
+              <label>送修客戶（選填）</label>
+              <input id="p3_customer" placeholder="例：XX科技 / 經銷商 / 專案名稱" />
+            </div>
+            <div>
+              <label>負責工程師（下拉）</label>
+              <select id="p3_engineer">
+                <option value="永富" selected>永富</option>
+                <option value="賜郎">賜郎</option>
+                <option value="賜福">賜福</option>
+                <option value="煌良">煌良</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="two-col" style="margin-top:10px;">
+            <div>
+              <label>收件日期（必填/預設今天）</label>
+              <input id="p3_receive_date" type="date" />
+            </div>
+            <div>
+              <label>寄回新竹日期（選填）</label>
+              <input id="p3_ship_date" type="date" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>維修原因說明（必填）</label>
+            <textarea id="p3_issue" placeholder="請描述故障狀況、是否可重現、發生頻率..."></textarea>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>目前處理方式（選填）</label>
+            <textarea id="p3_action" placeholder="例：更換主板、升級韌體、已寄回新竹待檢..."></textarea>
+          </div>
+
+          <div class="two-col" style="margin-top:10px;">
+            <div>
+              <label>狀態（OPEN / CLOSED）</label>
+              <select id="p3_status">
+                <option value="OPEN" selected>OPEN</option>
+                <option value="CLOSED">CLOSED</option>
+              </select>
+            </div>
+            <div>
+              <label>上傳照片/影片（照片最多 5 張；影片最多 1 段且 < 1 分鐘）</label>
+              <input id="p3_files" type="file" multiple accept="image/*,video/*" onchange="p3PreviewFiles()" />
+            </div>
+          </div>
+
+          <div id="p3_preview" class="thumbs"></div>
+
+          <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+            <button class="btn" onclick="p3Submit()">送出回報（含上傳）</button>
+            <button class="btn2" onclick="p3Clear()">清空重填</button>
+          </div>
+
+          <div class="msg" id="p3_msg">填好後按「送出回報」，照片/影片會存到指定 Drive 資料夾，查詢頁可看到縮圖。</div>
+        </div>
+      </section>
+
+      <!-- p4 -->
+      <section class="card panel" id="p4">
+        <div class="bar" data-bar>維修查詢（區域/型號/序號）</div>
+        <div class="body">
+          <div class="section-title">查詢（3 個入口）</div>
+
+          <div class="grid">
+            <div>
+              <label>依區域查詢（列出該區全部維修單）</label>
+              <select id="p4_region">
+                <option value="北" selected>北</option>
+                <option value="中">中</option>
+                <option value="南">南</option>
+                <option value="新竹">新竹</option>
+              </select>
+            </div>
+            <div>
+              <label>依型號查詢（列出該型號全部維修單）</label>
+              <input id="p4_model" placeholder="例：TE-XSC0A051-N / TE-IPB..." />
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn2" onclick="p4SearchByRegion()">查區域</button>
+              <button class="btn2" onclick="p4SearchByModel()">查型號</button>
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns: 1fr auto; margin-top:10px;">
+            <div>
+              <label>依產品序號查詢（同一台之所有維修紀錄）</label>
+              <input id="p4_sn" placeholder="例：RP3E01165..." />
+            </div>
+            <div>
+              <button class="btn2" onclick="p4SearchBySN()">查序號</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p4_msg">查詢後會顯示縮圖（點縮圖可開檔案）。</div>
+
+          <div class="section-title">維修紀錄清單</div>
+          <table id="p4_tbl">
+            <thead>
+              <tr>
+                <th style="width:110px;">repair_id</th>
+                <th style="width:110px;">收件日</th>
+                <th style="width:70px;">區域</th>
+                <th style="width:110px;">維修項目</th>
+                <th>料號 / 型號</th>
+                <th>序號</th>
+                <th style="width:160px;">客戶 / 維修單</th>
+                <th style="width:90px;">工程師</th>
+                <th style="width:260px;">狀態 / 圖片</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="9" style="color:#5b6b85;">尚未查詢</td></tr>
+            </tbody>
+          </table>
+
+          <div class="footer-note">
+            Drive 不公開：這裡不會顯示資料夾連結，只顯示檔案縮圖與檔案連結。
+          </div>
+        </div>
+      </section>
+
+      <!-- p5 -->
+      <section class="card panel" id="p5">
+        <div class="bar" data-bar>監控攝影機備品查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入攝影機料號 / 型號</label>
+              <input id="p5_q" placeholder="例：671-502616R 或 TE-IPB60505F36-MWI" />
+            </div>
+            <div></div>
+            <div>
+              <button class="btn" onclick="realSearch('p5')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p5_msg">查詢後顯示攝影機對應備品與庫存。</div>
+
+          <div class="section-title">備品清單：</div>
+          <table id="p5_tbl">
+            <thead>
+              <tr>
+                <th style="width:140px;">攝影機</th>
+                <th>備品料號</th>
+                <th>備品型號</th>
+                <th>說明</th>
+                <th>備註</th>
+                <th style="width:90px;">庫存</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer style="max-width:1200px;margin:0 auto 28px;padding:0 18px;">
+    <div style="
+      background:#ffffff;
+      border:1px solid #d7e2f3;
+      border-radius:14px;
+      padding:12px 14px;
+      color:#5b6b85;
+      font-size:12.5px;
+      box-shadow:0 6px 16px rgba(15,23,42,.06);
+    ">
+      本查詢頁僅供 CCTV／PoE Switch 外購品維修備品查詢使用。若系統程式有任何問題，請洽分機 2216（安安）。
+    </div>
+  </footer>
+</body>
+</html>
