@@ -154,7 +154,7 @@
       margin-bottom:6px;
       font-weight:800;
     }
-    input{
+    input, select, textarea{
       width:100%;
       padding:11px 12px;
       border:1px solid var(--line);
@@ -162,11 +162,14 @@
       outline:none;
       font-size:14px;
       background:#fff;
+      font-family:var(--font);
     }
-    input:focus{
+    textarea{ min-height:92px; resize:vertical; }
+    input:focus, select:focus, textarea:focus{
       border-color:#9dc0ff;
       box-shadow:0 0 0 4px rgba(27,119,255,.12);
     }
+
     .btn{
       padding:11px 14px;
       border-radius:12px;
@@ -180,6 +183,19 @@
     }
     .btn:hover{ filter:brightness(1.02); }
     .btn:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .btn2{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--brand);
+      font-weight:900;
+      cursor:pointer;
+      transition:.12s ease;
+      min-width:120px;
+    }
+    .btn2:hover{ background:#f6f9ff; }
 
     .msg{
       margin-top:10px;
@@ -241,11 +257,60 @@
 
     .panel{ display:none; }
     .panel.active{ display:block; }
+
+    .hr{
+      height:1px;
+      background:var(--line);
+      margin:12px 0;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:900;
+      font-size:12px;
+      color:var(--brand);
+    }
+
+    .preview-wrap{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:10px;
+    }
+    @media (max-width: 760px){
+      .preview-wrap{ grid-template-columns: 1fr; }
+    }
+    .preview{
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .preview .cap{
+      padding:8px 10px;
+      border-bottom:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
+      font-weight:900;
+      background:#f8fbff;
+    }
+    .preview iframe{
+      width:100%;
+      height:260px;
+      border:0;
+      display:block;
+      background:#fff;
+    }
   </style>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbwCliPLqrVHoLU-D2Le8g3uUAowe7J9HB6tprqjKe9IKqvCo2puqvn-_1Qfh2L9A582SA/exec";
+    // ✅ 你的 Web App exec URL（維持你目前這支）
+    const API_BASE = "https://script.google.com/macros/s/AKfycbz45QYHBHzFELV26POV-JCWpIfFDIYXSNkBvXgXWAZ-s54WOU9bpHpAIZAgOVMK9dKrsQ/exec";
 
+    /** JSONP helper（避開 CORS） */
     function jsonp(url){
       return new Promise((resolve, reject) => {
         const cbName = "cb_" + Math.random().toString(36).slice(2);
@@ -274,6 +339,7 @@
       });
     }
 
+    /** Querystring builder */
     function qs(obj){
       const p = new URLSearchParams();
       Object.entries(obj).forEach(([k,v])=>{
@@ -282,6 +348,7 @@
       return p.toString();
     }
 
+    /** UI helpers */
     function setMsg(panelId, type, text){
       const el = document.getElementById(panelId + "_msg");
       if (!el) return;
@@ -289,11 +356,41 @@
       el.textContent = text || "";
     }
 
+    /** HTML escape */
     function esc(v){
       const s = String(v == null ? "" : v);
       return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
     }
 
+    function norm(v){
+      return String(v ?? "").trim();
+    }
+
+    // 嘗試從 Drive 分享連結取 fileId（可貼各種格式）
+    function extractDriveFileId(url){
+      const s = String(url || "").trim();
+      if (!s) return "";
+      // /file/d/<id>/
+      let m = s.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (m && m[1]) return m[1];
+      // open?id=<id>
+      m = s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (m && m[1]) return m[1];
+      // uc?id=<id>
+      m = s.match(/uc\?id=([a-zA-Z0-9_-]+)/);
+      if (m && m[1]) return m[1];
+      // 只貼 id
+      if (/^[a-zA-Z0-9_-]{15,}$/.test(s)) return s;
+      return "";
+    }
+
+    function drivePreviewUrlFromLink(link){
+      const id = extractDriveFileId(link);
+      if (!id) return "";
+      return "https://drive.google.com/file/d/" + id + "/preview";
+    }
+
+    /** 分頁切換 */
     document.addEventListener("DOMContentLoaded", () => {
       const menu = document.getElementById("menu");
       if (!menu) return;
@@ -318,8 +415,18 @@
 
       const defaultPanel = (buttons.find(b => b.classList.contains("active")) || buttons[0])?.dataset.panel;
       if (defaultPanel) activate(defaultPanel);
+
+      // 維修清單表格：點「載入」把資料帶到表單
+      document.body.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-load-repair]");
+        if (!btn) return;
+        const idx = Number(btn.getAttribute("data-load-repair"));
+        if (!window.__p3Rows || !window.__p3Rows[idx]) return;
+        p3LoadToForm(window.__p3Rows[idx]);
+      });
     });
 
+    /** ====== p1~p2~p5：沿用你原本 realSearch（我只保留必要改動） ====== */
     async function realSearch(panelId){
       try {
         setMsg(panelId, "", "查詢中…");
@@ -389,58 +496,6 @@
           return;
         }
 
-        if (panelId === "p3"){
-          const q = document.getElementById("p3_q").value.trim();
-          const url = API_BASE + "?" + qs({ action:"mainboard_lookup", q });
-          const res = await jsonp(url);
-
-          if (!res.ok) throw new Error(res.msg || "API error");
-
-          const rows = Array.isArray(res.rows) ? res.rows : [];
-          const tbody = document.querySelector("#p3_tbl tbody");
-          tbody.innerHTML = rows.length
-            ? rows.map(r => `
-                <tr>
-                  <td>${esc(r.host)}</td>
-                  <td>${esc(r.part_code)}</td>
-                  <td>${esc(r.part_model)}</td>
-                  <td>${esc(r.description)}</td>
-                  <td>${esc(r.note)}</td>
-                  <td>${esc(r.stock_qty)}</td>
-                </tr>
-              `).join("")
-            : `<tr><td colspan="6" style="color:#5b6b85;">${esc(res.msg || "查無資料")}</td></tr>`;
-
-          setMsg("p3", rows.length ? "ok" : "error", rows.length ? "查詢完成" : (res.msg || "查無資料"));
-          return;
-        }
-
-        if (panelId === "p4"){
-          const q = document.getElementById("p4_q").value.trim();
-          const url = API_BASE + "?" + qs({ action:"adapter_lookup", q });
-          const res = await jsonp(url);
-
-          if (!res.ok) throw new Error(res.msg || "API error");
-
-          const rows = Array.isArray(res.rows) ? res.rows : [];
-          const tbody = document.querySelector("#p4_tbl tbody");
-          tbody.innerHTML = rows.length
-            ? rows.map(r => `
-                <tr>
-                  <td>${esc(r.host)}</td>
-                  <td>${esc(r.part_code)}</td>
-                  <td>${esc(r.spec)}</td>
-                  <td>${esc(r.description)}</td>
-                  <td>${esc(r.note)}</td>
-                  <td>${esc(r.stock_qty)}</td>
-                </tr>
-              `).join("")
-            : `<tr><td colspan="6" style="color:#5b6b85;">${esc(res.msg || "查無資料")}</td></tr>`;
-
-          setMsg("p4", rows.length ? "ok" : "error", rows.length ? "查詢完成" : (res.msg || "查無資料"));
-          return;
-        }
-
         if (panelId === "p5"){
           const q = document.getElementById("p5_q").value.trim();
           const url = API_BASE + "?" + qs({ action:"camera_spare_lookup", q });
@@ -474,7 +529,7 @@
       }
     }
 
-    // ===== p6（備品入庫）=====
+    /** ===== p6（備品入庫）===== */
     function p6SetSummary(s){
       const kv = document.getElementById("p6_summary").children;
       if (!s){
@@ -569,7 +624,6 @@
         const status = tr.querySelector(".p6_status")?.value || "IN_STOCK";
         const source = tr.querySelector(".p6_source")?.value?.trim() || "";
         const note = tr.querySelector(".p6_note")?.value?.trim() || "";
-
         return { product_code: code, serial_no: sn, mac_addr: mac, p2p_id: p2p, status, source, note };
       }).filter(x => x.serial_no && x.product_code);
 
@@ -594,6 +648,203 @@
         setMsg("p6","error","送出失敗：" + (err.message || err));
       }
     }
+
+    /** ===== p3 維修查詢＋回填 ===== */
+    function p3ClearTable(){
+      const tbody = document.querySelector("#p3_tbl tbody");
+      tbody.innerHTML = `<tr><td colspan="9" style="color:#5b6b85;">尚未查詢</td></tr>`;
+      window.__p3Rows = [];
+      setMsg("p3","", "");
+    }
+
+    function p3Render(rows){
+      const tbody = document.querySelector("#p3_tbl tbody");
+      if (!rows || !rows.length){
+        tbody.innerHTML = `<tr><td colspan="9" style="color:#5b6b85;">查無資料</td></tr>`;
+        return;
+      }
+      window.__p3Rows = rows;
+      tbody.innerHTML = rows.map((r, idx) => `
+        <tr>
+          <td><button class="btn2" data-load-repair="${idx}">載入</button></td>
+          <td>${esc(r.region || "")}</td>
+          <td>${esc(r.repair_no || "")}</td>
+          <td>${esc(r.model_no || "")}</td>
+          <td>${esc(r.product_code || "")}</td>
+          <td>${esc(r.serial_no || "")}</td>
+          <td>${esc(r.customer || "")}</td>
+          <td>${esc(r.engineer || "")}</td>
+          <td>${esc(r.status || "")}</td>
+        </tr>
+      `).join("");
+    }
+
+    async function p3Query(type){
+      try{
+        setMsg("p3","", "查詢中…");
+        const region = document.getElementById("p3_region_q").value;
+        const model = document.getElementById("p3_model_q").value.trim();
+        const sn = document.getElementById("p3_sn_q").value.trim();
+
+        let val = "";
+        if (type === "REGION") val = region;
+        if (type === "MODEL") val = model;
+        if (type === "SN") val = sn;
+
+        if (!val){
+          setMsg("p3","error","請先輸入查詢條件（區域/型號/序號）");
+          return;
+        }
+
+        // 需要你的 WebApp 增加 action=repair_query
+        const url = API_BASE + "?" + qs({ action:"repair_query", type, value: val });
+        const res = await jsonp(url);
+        if (!res.ok) throw new Error(res.msg || "API error");
+
+        const rows = Array.isArray(res.rows) ? res.rows : [];
+        p3Render(rows);
+        setMsg("p3", rows.length ? "ok" : "error", rows.length ? `查到 ${rows.length} 筆` : (res.msg || "查無資料"));
+      }catch(err){
+        setMsg("p3","error","查詢失敗：" + (err.message || err));
+      }
+    }
+
+    async function p3LookupModel(){
+      const code = document.getElementById("p3_product_code").value.trim();
+      if (!code){
+        setMsg("p3","error","請先輸入料號再帶出型號");
+        return;
+      }
+      try{
+        setMsg("p3","", "查詢型號中…");
+        const url = API_BASE + "?" + qs({ action:"product_lookup", code });
+        const res = await jsonp(url);
+        if (!res.ok) throw new Error(res.msg || "API error");
+        const model = (res.product && res.product.model_no) ? res.product.model_no : "";
+        document.getElementById("p3_model_no").value = model || "";
+        setMsg("p3","ok", model ? "已帶出型號" : "查到料號，但型號是空的（請確認 ProductMaster）");
+      }catch(err){
+        setMsg("p3","error","型號帶出失敗：" + (err.message || err));
+      }
+    }
+
+    function p3LoadToForm(r){
+      // 把清單資料帶到回填表單
+      document.getElementById("p3_repair_type").value = r.repair_type || "網路攝影機";
+      document.getElementById("p3_product_code").value = r.product_code || "";
+      document.getElementById("p3_model_no").value = r.model_no || "";
+      document.getElementById("p3_serial_no").value = r.serial_no || "";
+      document.getElementById("p3_repair_no").value = r.repair_no || "";
+      document.getElementById("p3_customer").value = r.customer || "";
+      document.getElementById("p3_reason").value = r.reason || "";
+      document.getElementById("p3_handling").value = r.handling || "";
+      document.getElementById("p3_return_date").value = r.return_date || "";
+      document.getElementById("p3_region").value = r.region || "北";
+      document.getElementById("p3_engineer").value = r.engineer || "永富";
+      document.getElementById("p3_status").value = r.status || "RECEIVED";
+      document.getElementById("p3_media_links").value = r.media_links || "";
+
+      p3RenderPreviewsFromLinks();
+      setMsg("p3","ok","已載入到下方表單，可直接修改後送出更新");
+      window.scrollTo({ top: document.getElementById("p3_form_anchor").getBoundingClientRect().top + window.scrollY - 90, behavior:"smooth" });
+    }
+
+    function p3RenderPreviewsFromLinks(){
+      const box = document.getElementById("p3_previews");
+      const raw = document.getElementById("p3_media_links").value || "";
+      const links = raw.split(/\n|,|;/).map(s => s.trim()).filter(Boolean);
+
+      const previews = links
+        .map(link => ({ link, pv: drivePreviewUrlFromLink(link) }))
+        .filter(x => x.pv);
+
+      if (!previews.length){
+        box.innerHTML = `<div style="color:#5b6b85;font-size:13px;">尚未偵測到可預覽的 Drive 檔案連結（可貼「分享連結」或「fileId」）</div>`;
+        return;
+      }
+
+      box.innerHTML = `
+        <div class="preview-wrap">
+          ${previews.map((x,i)=>`
+            <div class="preview">
+              <div class="cap">預覽 ${i+1}（需具備該檔案權限）</div>
+              <iframe src="${esc(x.pv)}" allow="autoplay"></iframe>
+            </div>
+          `).join("")}
+        </div>
+        <div class="footer-note">注意：此預覽不會公開 Drive。若使用者沒有該檔案權限，會顯示無法存取。</div>
+      `;
+    }
+
+    async function p3Submit(){
+      try{
+        setMsg("p3","", "送出中…");
+
+        const payload = {
+          action: "repair_add", // 需要你的 WebApp 增加此 action
+          repair_type: document.getElementById("p3_repair_type").value,
+          product_code: document.getElementById("p3_product_code").value.trim(),
+          model_no: document.getElementById("p3_model_no").value.trim(),
+          serial_no: document.getElementById("p3_serial_no").value.trim(),
+          repair_no: document.getElementById("p3_repair_no").value.trim(),
+          customer: document.getElementById("p3_customer").value.trim(),
+          reason: document.getElementById("p3_reason").value.trim(),
+          handling: document.getElementById("p3_handling").value.trim(),
+          return_date: document.getElementById("p3_return_date").value.trim(),
+          region: document.getElementById("p3_region").value,
+          engineer: document.getElementById("p3_engineer").value,
+          status: document.getElementById("p3_status").value,
+          media_links: document.getElementById("p3_media_links").value.trim()
+        };
+
+        if (!payload.product_code || !payload.serial_no || !payload.repair_no){
+          setMsg("p3","error","必填：料號 / 序號 / 維修單號");
+          return;
+        }
+
+        const url = API_BASE + "?" + qs(payload);
+        const res = await jsonp(url);
+        if (!res.ok) throw new Error(res.msg || "API error");
+
+        setMsg("p3","ok","送出成功（已寫入 RepairLog）");
+      }catch(err){
+        setMsg("p3","error","送出失敗：" + (err.message || err));
+      }
+    }
+
+    /** ===== p4 維修統計 ===== */
+    function p4RenderTable(tbodySel, rows, cols){
+      const tbody = document.querySelector(tbodySel);
+      if (!rows || !rows.length){
+        tbody.innerHTML = `<tr><td colspan="${cols}" style="color:#5b6b85;">尚無資料</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${esc(r.key || "")}</td>
+          <td>${esc(r.count || "0")}</td>
+        </tr>
+      `).join("");
+    }
+
+    async function p4Load(){
+      try{
+        setMsg("p4","", "載入統計中…");
+
+        // 需要你的 WebApp 增加 action=repair_stats
+        const url = API_BASE + "?" + qs({ action:"repair_stats" });
+        const res = await jsonp(url);
+        if (!res.ok) throw new Error(res.msg || "API error");
+
+        p4RenderTable("#p4_tbl_region tbody", res.by_region || [], 2);
+        p4RenderTable("#p4_tbl_model tbody", res.by_model || [], 2);
+        p4RenderTable("#p4_tbl_status tbody", res.by_status || [], 2);
+
+        setMsg("p4","ok","統計載入完成");
+      }catch(err){
+        setMsg("p4","error","載入失敗：" + (err.message || err));
+      }
+    }
   </script>
 </head>
 
@@ -611,14 +862,14 @@
       <nav class="menu" id="menu">
         <button class="active" data-panel="p1">產品料號 / 型號查詢</button>
         <button data-panel="p2">產品序號 / MAC 查詢</button>
-        <button data-panel="p3">監控主機主板查詢</button>
-        <button data-panel="p4">監控主機變壓器查詢</button>
+        <button data-panel="p3">維修查詢 / 回報（寄回新竹）</button>
+        <button data-panel="p4">維修統計（管理用）</button>
         <button data-panel="p5">監控攝影機備品查詢</button>
         <button data-panel="p6">備品補貨 / 入庫</button>
       </nav>
 
       <div class="hint">
-        本頁為維修備品查詢工具，資料來源為內部 Google Sheet + Apps Script API。
+        本頁為維修備品查詢工具（GitHub Pages + Apps Script JSONP）。
       </div>
     </aside>
 
@@ -641,4 +892,402 @@
             </div>
           </div>
 
-          <div class="msg" id="p1_msg">請輸入任一欄位再查詢。</div_
+          <div class="msg" id="p1_msg">請輸入任一欄位再查詢。</div>
+
+          <div class="section-title">查詢結果如下：</div>
+          <div class="kv" id="p1_kv">
+            <div class="k">產品料號</div><div class="v">—</div>
+            <div class="k">產品型號</div><div class="v">—</div>
+            <div class="k">供應商號</div><div class="v">—</div>
+            <div class="k">中文名稱</div><div class="v">—</div>
+            <div class="k">備註</div><div class="v">—</div>
+          </div>
+
+          <div class="section-title">維修備品資訊：</div>
+          <table id="p1_tbl">
+            <thead>
+              <tr>
+                <th style="width:120px;">項目</th>
+                <th>料號</th>
+                <th>型號</th>
+                <th>說明</th>
+                <th>備註</th>
+                <th style="width:90px;">庫存</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢</td></tr>
+            </tbody>
+          </table>
+
+          <div class="footer-note">會顯示 ProductMaster + ProductBOM + 備品庫存結果。</div>
+        </div>
+      </section>
+
+      <!-- Panel 2 -->
+      <section class="card panel" id="p2">
+        <div class="bar" data-bar>產品序號 / MAC 查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入序號（serial_no）</label>
+              <input id="p2_sn" placeholder="例：RX2K00001 或 RP3E01165..." />
+            </div>
+            <div>
+              <label>輸入 MAC（選填）</label>
+              <input id="p2_mac" placeholder="例：00:11:22:33:44:55" />
+            </div>
+            <div>
+              <button class="btn" onclick="realSearch('p2')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p2_msg">可用序號查：出貨客戶 / 出貨日期 / 型號 / MAC / P2P。</div>
+
+          <div class="section-title">查詢結果如下：</div>
+          <div class="kv" id="p2_kv">
+            <div class="k">序號</div><div class="v">—</div>
+            <div class="k">型號</div><div class="v">—</div>
+            <div class="k">出貨日期</div><div class="v">—</div>
+            <div class="k">出貨客戶</div><div class="v">—</div>
+            <div class="k">出貨單號</div><div class="v">—</div>
+            <div class="k">MAC</div><div class="v">—</div>
+            <div class="k">P2P</div><div class="v">—</div>
+          </div>
+
+          <div class="footer-note">
+            若查不到序號資料，可能是備品更換/換機造成未匯入；建議再用料號/型號/出貨單交叉查詢。
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 3 -->
+      <section class="card panel" id="p3">
+        <div class="bar" data-bar>維修查詢 / 回報（寄回新竹）</div>
+        <div class="body">
+          <div class="section-title">查詢（3 個入口）</div>
+
+          <div class="grid" style="grid-template-columns: 1fr 1fr auto; margin-bottom:10px;">
+            <div>
+              <label>依區域查詢</label>
+              <select id="p3_region_q">
+                <option value="北">北</option>
+                <option value="中">中</option>
+                <option value="南">南</option>
+                <option value="新竹">新竹</option>
+              </select>
+            </div>
+            <div>
+              <label>依型號查詢</label>
+              <input id="p3_model_q" placeholder="例：TE-XSC0A051-N / TE-IPB..." />
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn2" onclick="p3Query('REGION')">查區域</button>
+              <button class="btn2" onclick="p3Query('MODEL')">查型號</button>
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns: 1fr auto auto;">
+            <div>
+              <label>依產品序號查詢（同一台之前所有維修紀錄）</label>
+              <input id="p3_sn_q" placeholder="例：RP3E01165..." />
+            </div>
+            <div>
+              <button class="btn2" onclick="p3Query('SN')">查序號</button>
+            </div>
+            <div>
+              <button class="btn2" onclick="p3ClearTable()">清空</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p3_msg"></div>
+
+          <div class="section-title">維修清單（點「載入」可快速回填 / 更新狀態）</div>
+          <table id="p3_tbl">
+            <thead>
+              <tr>
+                <th style="width:88px;">操作</th>
+                <th style="width:70px;">區域</th>
+                <th style="width:120px;">維修單號</th>
+                <th style="width:170px;">型號</th>
+                <th style="width:140px;">料號</th>
+                <th style="width:160px;">序號</th>
+                <th style="width:160px;">客戶</th>
+                <th style="width:90px;">工程師</th>
+                <th style="width:90px;">狀態</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="9" style="color:#5b6b85;">尚未查詢</td></tr>
+            </tbody>
+          </table>
+
+          <div class="hr"></div>
+
+          <div class="section-title" id="p3_form_anchor">維修回報 / 更新（寄回新竹）</div>
+          <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; align-items:end;">
+            <div>
+              <label>維修項目</label>
+              <select id="p3_repair_type">
+                <option>類比攝影機</option>
+                <option selected>網路攝影機</option>
+                <option>XVR</option>
+                <option>NVR</option>
+                <option>POE SWITCH</option>
+              </select>
+            </div>
+            <div>
+              <label>料號（必填）</label>
+              <input id="p3_product_code" placeholder="例：271-001022R" />
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn2" onclick="p3LookupModel()">帶出型號</button>
+              <button class="btn2" onclick="p3RenderPreviewsFromLinks()">更新預覽</button>
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:10px;">
+            <div>
+              <label>型號（由料號帶出）</label>
+              <input id="p3_model_no" placeholder="會自動帶出" />
+            </div>
+            <div>
+              <label>產品序號（必填）</label>
+              <input id="p3_serial_no" placeholder="例：RP3E01165..." />
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:10px;">
+            <div>
+              <label>維修單號（必填）</label>
+              <input id="p3_repair_no" placeholder="例：RMA-2026-0001" />
+            </div>
+            <div>
+              <label>送修客戶</label>
+              <input id="p3_customer" placeholder="例：XX科技 / XX學校" />
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:10px;">
+            <div>
+              <label>區域</label>
+              <select id="p3_region">
+                <option value="北">北</option>
+                <option value="中">中</option>
+                <option value="南">南</option>
+                <option value="新竹">新竹</option>
+              </select>
+            </div>
+            <div>
+              <label>負責工程師</label>
+              <select id="p3_engineer">
+                <option value="永富">永富</option>
+                <option value="賜郎">賜郎</option>
+                <option value="賜福">賜福</option>
+                <option value="煌良">煌良</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:10px;">
+            <div>
+              <label>目前狀態</label>
+              <select id="p3_status">
+                <option value="RECEIVED">RECEIVED（已收件）</option>
+                <option value="CHECKING">CHECKING（檢測中）</option>
+                <option value="FIXING">FIXING（維修中）</option>
+                <option value="DONE">DONE（完成）</option>
+                <option value="RETURNED">RETURNED（已寄回）</option>
+                <option value="SCRAP">SCRAP（報廢）</option>
+              </select>
+            </div>
+            <div>
+              <label>維修品寄回新竹日期</label>
+              <input id="p3_return_date" placeholder="例：2026-01-26" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>維修原因說明</label>
+            <textarea id="p3_reason" placeholder="請描述故障現象、觸發條件、發生頻率…"></textarea>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>目前處理方式</label>
+            <textarea id="p3_handling" placeholder="例：更換主板/更換電源/升級韌體/重灌設定/待料…"></textarea>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>照片/影片連結（可貼 Drive 分享連結；一行一個 / 或用逗號分隔）</label>
+            <textarea id="p3_media_links" placeholder="貼上 Drive 檔案連結（不會提供資料夾按鈕）。例如：https://drive.google.com/file/d/FILEID/view"></textarea>
+          </div>
+
+          <div class="section-title">頁面內預覽（不開 Drive 資料夾頁）</div>
+          <div id="p3_previews" style="margin-top:6px;color:#5b6b85;font-size:13px;">
+            尚未偵測到可預覽的 Drive 檔案連結（可貼「分享連結」或「fileId」）
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn" onclick="p3Submit()">送出 / 更新</button>
+            <button class="btn2" onclick="p3RenderPreviewsFromLinks()">只更新預覽</button>
+          </div>
+
+          <div class="footer-note">
+            注意：Drive 檔案若設定為私密，只有「具備該檔案權限」的登入者才能在此預覽。此頁不提供資料夾連結。
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 4 -->
+      <section class="card panel" id="p4">
+        <div class="bar" data-bar>維修統計（管理用）</div>
+        <div class="body">
+          <div class="grid" style="grid-template-columns: 1fr auto;">
+            <div>
+              <div class="section-title" style="margin-top:0;">快速統計</div>
+              <div style="color:#5b6b85;font-size:13px;">
+                會依 RepairLog 目前資料計算：區域 / 型號 / 狀態 件數。
+              </div>
+            </div>
+            <div style="display:flex;align-items:end;">
+              <button class="btn" onclick="p4Load()">載入統計</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p4_msg"></div>
+
+          <div class="hr"></div>
+
+          <div class="section-title">各區域件數</div>
+          <table id="p4_tbl_region">
+            <thead><tr><th>區域</th><th style="width:120px;">件數</th></tr></thead>
+            <tbody><tr><td colspan="2" style="color:#5b6b85;">尚未載入</td></tr></tbody>
+          </table>
+
+          <div class="section-title" style="margin-top:14px;">各型號件數</div>
+          <table id="p4_tbl_model">
+            <thead><tr><th>型號</th><th style="width:120px;">件數</th></tr></thead>
+            <tbody><tr><td colspan="2" style="color:#5b6b85;">尚未載入</td></tr></tbody>
+          </table>
+
+          <div class="section-title" style="margin-top:14px;">各狀態件數</div>
+          <table id="p4_tbl_status">
+            <thead><tr><th>狀態</th><th style="width:120px;">件數</th></tr></thead>
+            <tbody><tr><td colspan="2" style="color:#5b6b85;">尚未載入</td></tr></tbody>
+          </table>
+
+          <div class="footer-note">
+            這是第一版總覽（先讓委員/主管看得懂）。下一版我可以加：近 30 天趨勢、工程師負載、Top 故障原因等。
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 5 -->
+      <section class="card panel" id="p5">
+        <div class="bar" data-bar>監控攝影機備品查詢</div>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label>輸入攝影機料號 / 型號</label>
+              <input id="p5_q" placeholder="例：671-502616R 或 TE-IPB60505F36-MWI" />
+            </div>
+            <div></div>
+            <div>
+              <button class="btn" onclick="realSearch('p5')">查詢</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p5_msg">查詢後顯示攝影機對應備品與庫存。</div>
+
+          <div class="section-title">備品清單：</div>
+          <table id="p5_tbl">
+            <thead>
+              <tr>
+                <th style="width:140px;">攝影機</th>
+                <th>備品料號</th>
+                <th>備品型號</th>
+                <th>說明</th>
+                <th>備註</th>
+                <th style="width:90px;">庫存</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel 6 -->
+      <section class="card panel" id="p6">
+        <div class="bar" data-bar>備品補貨 / 入庫</div>
+        <div class="body">
+          <div class="grid" style="grid-template-columns: 1fr 1fr auto;">
+            <div>
+              <label>備品料號（product_code）</label>
+              <input id="p6_code" placeholder="例：271-001022R" onblur="p6LookupModel()"/>
+            </div>
+            <div>
+              <label>型號（由料號帶出）</label>
+              <input id="p6_model" placeholder="自動帶出" />
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn2" onclick="p6LookupModel()">帶出型號</button>
+              <button class="btn2" onclick="p6AddRow()">＋新增明細</button>
+            </div>
+          </div>
+
+          <div class="msg" id="p6_msg">輸入料號後，可新增多列序號/MAC/P2P，送出會回填 SpareItemLog 並重算 Summary。</div>
+
+          <div class="section-title">本次入庫明細</div>
+          <table id="p6_tbl">
+            <thead>
+              <tr>
+                <th>序號（必填）</th>
+                <th>MAC</th>
+                <th>P2P</th>
+                <th style="width:130px;">狀態</th>
+                <th>來源</th>
+                <th>備註</th>
+                <th style="width:70px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="7" style="color:#5b6b85;">尚未新增</td></tr>
+            </tbody>
+          </table>
+
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn" onclick="p6Submit()">送出入庫</button>
+            <button class="btn2" onclick="p6Clear()">清空</button>
+          </div>
+
+          <div class="section-title">庫存彙總（SpareStockSummary）</div>
+          <div class="kv" id="p6_summary">
+            <div class="k">IN_STOCK</div><div class="v">—</div>
+            <div class="k">USED</div><div class="v">—</div>
+            <div class="k">SCRAP</div><div class="v">—</div>
+            <div class="k">最後更新</div><div class="v">—</div>
+          </div>
+
+          <div class="footer-note">status 固定三種：IN_STOCK / USED / SCRAP。</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer style="max-width:1200px;margin:0 auto 28px;padding:0 18px;">
+    <div style="
+      background:#ffffff;
+      border:1px solid #d7e2f3;
+      border-radius:14px;
+      padding:12px 14px;
+      color:#5b6b85;
+      font-size:12.5px;
+      box-shadow:0 6px 16px rgba(15,23,42,.06);
+    ">
+      本查詢頁僅供 CCTV／PoE Switch 外購品維修備品查詢使用。若系統程式有任何問題，請洽分機 2216（安安）。
+    </div>
+  </footer>
+</body>
+</html>
