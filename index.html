@@ -34,7 +34,6 @@
       color:var(--text);
     }
 
-    /* Header */
     .topbar{
       background:linear-gradient(90deg, var(--brand), var(--brand-2));
       color:#fff;
@@ -55,12 +54,10 @@
     .brand-title{
       font-size:18px;
       font-weight:900;
-      seesion: initial;
       letter-spacing:.2px;
       line-height:1.25;
     }
 
-    /* Layout */
     .page{
       max-width:1200px;
       margin:18px auto 18px;
@@ -73,7 +70,6 @@
       .page{ grid-template-columns: 1fr; }
     }
 
-    /* Sidebar */
     .sidebar{
       background:var(--card);
       border:1px solid var(--line);
@@ -118,7 +114,6 @@
       border-top:1px solid var(--line);
     }
 
-    /* Main */
     .main{
       display:flex;
       flex-direction:column;
@@ -201,7 +196,6 @@
       font-size:16px;
     }
 
-    /* Result blocks */
     .kv{
       display:grid;
       grid-template-columns: 140px 1fr;
@@ -216,7 +210,6 @@
     .kv .k{ color:var(--muted); font-weight:900; }
     .kv .v{ font-weight:900; }
 
-    /* Table */
     table{
       width:100%;
       border-collapse:separate;
@@ -246,16 +239,13 @@
       color:var(--muted);
     }
 
-    /* Hide panels */
     .panel{ display:none; }
     .panel.active{ display:block; }
   </style>
 
   <script>
-    // ✅ 這裡填你部署 Web App 的 exec URL（保持你目前這個）
-    const API_BASE = "https://script.google.com/macros/s/AKfycbzGLR-GOBighyARl3q05zFavhpRoejO1M81Zq2wOpYwLRPFLKfm2ri4xPkSEKspnVjHvA/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbwCliPLqrVHoLU-D2Le8g3uUAowe7J9HB6tprqjKe9IKqvCo2puqvn-_1Qfh2L9A582SA/exec";
 
-    /** JSONP helper（避開 CORS） */
     function jsonp(url){
       return new Promise((resolve, reject) => {
         const cbName = "cb_" + Math.random().toString(36).slice(2);
@@ -284,7 +274,6 @@
       });
     }
 
-    /** Querystring builder */
     function qs(obj){
       const p = new URLSearchParams();
       Object.entries(obj).forEach(([k,v])=>{
@@ -293,7 +282,6 @@
       return p.toString();
     }
 
-    /** UI helpers */
     function setMsg(panelId, type, text){
       const el = document.getElementById(panelId + "_msg");
       if (!el) return;
@@ -301,13 +289,11 @@
       el.textContent = text || "";
     }
 
-    /** HTML escape */
     function esc(v){
       const s = String(v == null ? "" : v);
       return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
     }
 
-    /** 分頁切換：只保留一份（避免重複綁定） */
     document.addEventListener("DOMContentLoaded", () => {
       const menu = document.getElementById("menu");
       if (!menu) return;
@@ -334,7 +320,6 @@
       if (defaultPanel) activate(defaultPanel);
     });
 
-    /** ====== Real Search ====== */
     async function realSearch(panelId){
       try {
         setMsg(panelId, "", "查詢中…");
@@ -391,15 +376,14 @@
             return;
           }
 
-                    const kv = document.getElementById("p2_kv").children;
-                 kv[1].textContent  = res.data.serial_no || "—";
-                 kv[3].textContent  = res.data.model_no || "—";
-                 kv[5].textContent  = res.data.ship_date || "—";
-                 kv[7].textContent  = res.data.customer_name || "—";
-                 kv[9].textContent  = res.data.ship_doc_no || "—";
-                 kv[11].textContent = res.data.mac_addr || "—";
-                 kv[13].textContent = res.data.p2p_id || "—";
-                 
+          const kv = document.getElementById("p2_kv").children;
+          kv[1].textContent  = res.data.serial_no || "—";
+          kv[3].textContent  = res.data.model_no || "—";
+          kv[5].textContent  = res.data.ship_date || "—";
+          kv[7].textContent  = res.data.customer_name || "—";
+          kv[9].textContent  = res.data.ship_doc_no || "—";
+          kv[11].textContent = res.data.mac_addr || "—";
+          kv[13].textContent = res.data.p2p_id || "—";
 
           setMsg("p2", "ok", "查詢完成");
           return;
@@ -490,135 +474,126 @@
       }
     }
 
+    // ===== p6（備品入庫）=====
     function p6SetSummary(s){
-  const kv = document.getElementById("p6_summary").children;
-  if (!s){
-    kv[1].textContent = "—";
-    kv[3].textContent = "—";
-    kv[5].textContent = "—";
-    kv[7].textContent = "—";
-    return;
-  }
-  kv[1].textContent = s.in_stock_qty ?? "0";
-  kv[3].textContent = s.used_qty ?? "0";
-  kv[5].textContent = s.scrap_qty ?? "0";
-  kv[7].textContent = s.last_update ?? "—";
-}
+      const kv = document.getElementById("p6_summary").children;
+      if (!s){
+        kv[1].textContent = "—";
+        kv[3].textContent = "—";
+        kv[5].textContent = "—";
+        kv[7].textContent = "—";
+        return;
+      }
+      kv[1].textContent = s.in_stock_qty ?? "0";
+      kv[3].textContent = s.used_qty ?? "0";
+      kv[5].textContent = s.scrap_qty ?? "0";
+      kv[7].textContent = s.last_update ?? "—";
+    }
 
-async function p6LookupModel(){
-  const code = document.getElementById("p6_code").value.trim();
-  if (!code) return;
+    async function p6LookupModel(){
+      const code = document.getElementById("p6_code").value.trim();
+      if (!code) return;
 
-  try{
-    setMsg("p6", "", "查詢型號中…");
-    const url = API_BASE + "?" + qs({ action:"product_lookup", code });
-    const res = await jsonp(url);
-    if (!res.ok) throw new Error(res.msg || "API error");
+      try{
+        setMsg("p6", "", "查詢型號中…");
+        const url = API_BASE + "?" + qs({ action:"product_lookup", code });
+        const res = await jsonp(url);
+        if (!res.ok) throw new Error(res.msg || "API error");
 
-    const model = (res.product && res.product.model_no) ? res.product.model_no : "";
-    document.getElementById("p6_model").value = model || "";
-    setMsg("p6", "ok", model ? "已帶出型號" : "查到料號，但型號欄位為空（請確認 ProductMaster）");
-  }catch(err){
-    setMsg("p6", "error", "型號帶出失敗：" + (err.message || err));
-  }
-}
+        const model = (res.product && res.product.model_no) ? res.product.model_no : "";
+        document.getElementById("p6_model").value = model || "";
+        setMsg("p6", "ok", model ? "已帶出型號" : "查到料號，但型號欄位為空（請確認 ProductMaster）");
+      }catch(err){
+        setMsg("p6", "error", "型號帶出失敗：" + (err.message || err));
+      }
+    }
 
-function p6AddRow(){
-  const tbody = document.querySelector("#p6_tbl tbody");
-  const code = document.getElementById("p6_code").value.trim();
-  if (!code){
-    setMsg("p6","error","請先輸入備品料號（product_code）再新增明細列");
-    return;
-  }
+    function p6AddRow(){
+      const tbody = document.querySelector("#p6_tbl tbody");
+      const code = document.getElementById("p6_code").value.trim();
+      if (!code){
+        setMsg("p6","error","請先輸入備品料號（product_code）再新增明細列");
+        return;
+      }
 
-  // 如果還是「尚未新增」那列，先清掉
-  if (tbody.children.length === 1 && tbody.children[0].children.length === 1){
-    tbody.innerHTML = "";
-  }
+      if (tbody.children.length === 1 && tbody.children[0].children.length === 1){
+        tbody.innerHTML = "";
+      }
 
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td><input class="p6_sn" placeholder="例：RP3C00095" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
-    <td><input class="p6_mac" placeholder="00:11:22:33:44:55" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
-    <td><input class="p6_p2p" placeholder="P2P..." style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
-    <td>
-      <select class="p6_status" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;">
-        <option value="IN_STOCK" selected>IN_STOCK</option>
-        <option value="USED">USED</option>
-        <option value="SCRAP">SCRAP</option>
-      </select>
-    </td>
-    <td><input class="p6_source" placeholder="採購補貨/客退/換修..." style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
-    <td><input class="p6_note" placeholder="" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
-    <td><button class="btn" style="min-width:unset;padding:8px 10px;background:linear-gradient(180deg,#ef4444,#dc2626);border-color:rgba(239,68,68,.35);" onclick="this.closest('tr').remove(); return false;">刪</button></td>
-  `;
-  tbody.appendChild(tr);
-  setMsg("p6","", "已新增一列，請填序號（必填）");
-}
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input class="p6_sn" placeholder="例：RP3C00095" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+        <td><input class="p6_mac" placeholder="00:11:22:33:44:55" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+        <td><input class="p6_p2p" placeholder="P2P..." style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+        <td>
+          <select class="p6_status" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;">
+            <option value="IN_STOCK" selected>IN_STOCK</option>
+            <option value="USED">USED</option>
+            <option value="SCRAP">SCRAP</option>
+          </select>
+        </td>
+        <td><input class="p6_source" placeholder="採購補貨/客退/換修..." style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+        <td><input class="p6_note" placeholder="" style="width:100%;padding:9px 10px;border:1px solid #d7e2f3;border-radius:10px;"></td>
+        <td><button class="btn" style="min-width:unset;padding:8px 10px;background:linear-gradient(180deg,#ef4444,#dc2626);border-color:rgba(239,68,68,.35);" onclick="this.closest('tr').remove(); return false;">刪</button></td>
+      `;
+      tbody.appendChild(tr);
+      setMsg("p6","", "已新增一列，請填序號（必填）");
+    }
 
-function p6Clear(){
-  const tbody = document.querySelector("#p6_tbl tbody");
-  tbody.innerHTML = `<tr><td colspan="7" style="color:#5b6b85;">尚未新增</td></tr>`;
-  p6SetSummary(null);
-  setMsg("p6","", "已清空本次明細");
-}
+    function p6Clear(){
+      const tbody = document.querySelector("#p6_tbl tbody");
+      tbody.innerHTML = `<tr><td colspan="7" style="color:#5b6b85;">尚未新增</td></tr>`;
+      p6SetSummary(null);
+      setMsg("p6","", "已清空本次明細");
+    }
 
-async function p6Submit(){
-  const code = document.getElementById("p6_code").value.trim();
-  if (!code){
-    setMsg("p6","error","請先輸入備品料號");
-    return;
-  }
+    async function p6Submit(){
+      const code = document.getElementById("p6_code").value.trim();
+      if (!code){
+        setMsg("p6","error","請先輸入備品料號");
+        return;
+      }
 
-  const tbody = document.querySelector("#p6_tbl tbody");
-  const rows = Array.from(tbody.querySelectorAll("tr"));
+      const tbody = document.querySelector("#p6_tbl tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
 
-  // 若是「尚未新增」那列
-  if (rows.length === 1 && rows[0].children.length === 1){
-    setMsg("p6","error","請先新增至少一列明細");
-    return;
-  }
+      if (rows.length === 1 && rows[0].children.length === 1){
+        setMsg("p6","error","請先新增至少一列明細");
+        return;
+      }
 
-  const items = rows.map(tr => {
-    const sn = tr.querySelector(".p6_sn")?.value?.trim() || "";
-    const mac = tr.querySelector(".p6_mac")?.value?.trim() || "";
-    const p2p = tr.querySelector(".p6_p2p")?.value?.trim() || "";
-    const status = tr.querySelector(".p6_status")?.value || "IN_STOCK";
-    const source = tr.querySelector(".p6_source")?.value?.trim() || "";
-    const note = tr.querySelector(".p6_note")?.value?.trim() || "";
+      const items = rows.map(tr => {
+        const sn = tr.querySelector(".p6_sn")?.value?.trim() || "";
+        const mac = tr.querySelector(".p6_mac")?.value?.trim() || "";
+        const p2p = tr.querySelector(".p6_p2p")?.value?.trim() || "";
+        const status = tr.querySelector(".p6_status")?.value || "IN_STOCK";
+        const source = tr.querySelector(".p6_source")?.value?.trim() || "";
+        const note = tr.querySelector(".p6_note")?.value?.trim() || "";
 
-    return {
-      product_code: code,
-      serial_no: sn,
-      mac_addr: mac,
-      p2p_id: p2p,
-      status,
-      source,
-      note
-    };
-  }).filter(x => x.serial_no && x.product_code);
+        return { product_code: code, serial_no: sn, mac_addr: mac, p2p_id: p2p, status, source, note };
+      }).filter(x => x.serial_no && x.product_code);
 
-  if (!items.length){
-    setMsg("p6","error","沒有有效資料：請確認每列都有填序號（serial_no）");
-    return;
-  }
+      if (!items.length){
+        setMsg("p6","error","沒有有效資料：請確認每列都有填序號（serial_no）");
+        return;
+      }
 
-  try{
-    setMsg("p6","", "送出中…（會自動重算庫存彙總）");
-    const url = API_BASE + "?" + qs({ action:"spare_add", items: JSON.stringify(items) });
-    const res = await jsonp(url);
-    if (!res.ok) throw new Error(res.msg || "API error");
+      try{
+        setMsg("p6","", "送出中…（會自動重算庫存彙總）");
+        const url = API_BASE + "?" + qs({ action:"spare_add", items: JSON.stringify(items) });
+        const res = await jsonp(url);
+        if (!res.ok) throw new Error(res.msg || "API error");
 
-    // 取回 summary（只顯示本次料號）
-    const s = Array.isArray(res.summary) ? res.summary.find(x => String(x.product_code||"").toUpperCase() === code.toUpperCase()) : null;
-    p6SetSummary(s || null);
+        const s = Array.isArray(res.summary)
+          ? res.summary.find(x => String(x.product_code||"").toUpperCase() === code.toUpperCase())
+          : null;
 
-    setMsg("p6","ok", `已新增 ${res.added || items.length} 筆。`);
-  }catch(err){
-    setMsg("p6","error","送出失敗：" + (err.message || err));
-  }
-}
-
+        p6SetSummary(s || null);
+        setMsg("p6","ok", `已新增 ${res.added || items.length} 筆。`);
+      }catch(err){
+        setMsg("p6","error","送出失敗：" + (err.message || err));
+      }
+    }
   </script>
 </head>
 
@@ -640,7 +615,6 @@ async function p6Submit(){
         <button data-panel="p4">監控主機變壓器查詢</button>
         <button data-panel="p5">監控攝影機備品查詢</button>
         <button data-panel="p6">備品補貨 / 入庫</button>
-
       </nav>
 
       <div class="hint">
@@ -667,261 +641,4 @@ async function p6Submit(){
             </div>
           </div>
 
-          <div class="msg" id="p1_msg">請輸入任一欄位再查詢。</div>
-
-          <div class="section-title">查詢結果如下：</div>
-          <div class="kv" id="p1_kv">
-            <div class="k">產品料號</div><div class="v">—</div>
-            <div class="k">產品型號</div><div class="v">—</div>
-            <div class="k">供應商號</div><div class="v">—</div>
-            <div class="k">中文名稱</div><div class="v">—</div>
-            <div class="k">備註</div><div class="v">—</div>
-          </div>
-
-          <div class="section-title">維修備品資訊：</div>
-          <table id="p1_tbl">
-            <thead>
-              <tr>
-                <th style="width:120px;">項目</th>
-                <th>料號</th>
-                <th>型號</th>
-                <th>說明</th>
-                <th>備註</th>
-                <th style="width:90px;">庫存</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢</td></tr>
-            </tbody>
-          </table>
-
-          <div class="footer-note">會顯示 ProductMaster + ProductBOM + 庫存（主板/電源/備品）結果。</div>
-        </div>
-      </section>
-
-      <!-- Panel 2 -->
-      <section class="card panel" id="p2">
-        <div class="bar" data-bar>產品序號 / MAC 查詢</div>
-        <div class="body">
-          <div class="grid">
-            <div>
-              <label>輸入序號（serial_no）</label>
-              <input id="p2_sn" placeholder="例：RX2K00001 或 RP3E01165..." />
-            </div>
-            <div>
-              <label>輸入 MAC（選填）</label>
-              <input id="p2_mac" placeholder="例：00:11:22:33:44:55" />
-            </div>
-            <div>
-              <button class="btn" onclick="realSearch('p2')">查詢</button>
-            </div>
-          </div>
-
-          <div class="msg" id="p2_msg">可用序號查：出貨客戶 / 出貨日期 / 型號 / MAC。</div>
-
-          <div class="section-title">查詢結果如下：</div>
-          <div class="kv" id="p2_kv">
-              <div class="k">序號</div><div class="v">—</div>
-              <div class="k">型號</div><div class="v">—</div>
-              <div class="k">出貨日期</div><div class="v">—</div>
-              <div class="k">出貨客戶</div><div class="v">—</div>
-              <div class="k">出貨單號</div><div class="v">—</div>
-              <div class="k">MAC</div><div class="v">—</div>
-              <div class="k">P2P</div><div class="v">—</div>
-          </div>
-
-
-          <div class="footer-note">
-            若查不到序號出貨紀錄，可能是備品更換/換機造成序號未落在原出貨資料中，建議再用料號/型號/出貨單交叉查詢。
-          </div>
-        </div>
-      </section>
-
-      <!-- Panel 3 -->
-      <section class="card panel" id="p3">
-        <div class="bar" data-bar>監控主機主板查詢</div>
-        <div class="body">
-          <div class="grid">
-            <div>
-              <label>輸入主機料號 / 型號</label>
-              <input id="p3_q" placeholder="例：271-001022R 或 TE-XSC0A051-N" />
-            </div>
-            <div></div>
-            <div>
-              <button class="btn" onclick="realSearch('p3')">查詢</button>
-            </div>
-          </div>
-
-          <div class="msg" id="p3_msg">查詢後顯示對應主板料號 / 型號 / 庫存。</div>
-
-          <div class="section-title">主板對應結果：</div>
-          <table id="p3_tbl">
-            <thead>
-              <tr>
-                <th style="width:140px;">主機</th>
-                <th>主板料號</th>
-                <th>主板型號</th>
-                <th>說明</th>
-                <th>備註</th>
-                <th style="width:90px;">庫存</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Panel 4 -->
-      <section class="card panel" id="p4">
-        <div class="bar" data-bar>監控主機變壓器查詢</div>
-        <div class="body">
-          <div class="grid">
-            <div>
-              <label>輸入主機料號 / 型號</label>
-              <input id="p4_q" placeholder="例：271-001022R 或 TE-XSC0A051-N" />
-            </div>
-            <div></div>
-            <div>
-              <button class="btn" onclick="realSearch('p4')">查詢</button>
-            </div>
-          </div>
-
-          <div class="msg" id="p4_msg">查詢後顯示對應變壓器料號 / 規格 / 庫存。</div>
-
-          <div class="section-title">變壓器對應結果：</div>
-          <table id="p4_tbl">
-            <thead>
-              <tr>
-                <th style="width:140px;">主機</th>
-                <th>變壓器料號</th>
-                <th>規格</th>
-                <th>說明</th>
-                <th>備註</th>
-                <th style="width:90px;">庫存</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Panel 5 -->
-      <section class="card panel" id="p5">
-        <div class="bar" data-bar>監控攝影機備品查詢</div>
-        <div class="body">
-          <div class="grid">
-            <div>
-              <label>輸入攝影機料號 / 型號</label>
-              <input id="p5_q" placeholder="例：671-502616R 或 TE-IPB60505F36-MWI" />
-            </div>
-            <div></div>
-            <div>
-              <button class="btn" onclick="realSearch('p5')">查詢</button>
-            </div>
-          </div>
-
-          <div class="msg" id="p5_msg">查詢後顯示攝影機對應備品與庫存。</div>
-
-          <div class="section-title">備品清單：</div>
-          <table id="p5_tbl">
-            <thead>
-              <tr>
-                <th style="width:140px;">攝影機</th>
-                <th>備品料號</th>
-                <th>備品型號</th>
-                <th>說明</th>
-                <th>備註</th>
-                <th style="width:90px;">庫存</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="6" style="color:#5b6b85;">尚未查詢</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Panel 6 -->
-<section class="card panel" id="p6">
-  <div class="bar" data-bar>備品補貨 / 入庫</div>
-  <div class="body">
-    <div class="grid" style="grid-template-columns: 1fr 1fr auto;">
-      <div>
-        <label>備品料號（product_code）</label>
-        <input id="p6_code" placeholder="例：671-502609R" onblur="p6LookupModel()" />
-      </div>
-      <div>
-        <label>型號（model_no，系統帶出）</label>
-        <input id="p6_model" placeholder="自動帶出" disabled />
-      </div>
-      <div>
-        <button class="btn" onclick="p6AddRow()">＋新增一列</button>
-      </div>
-    </div>
-
-    <div class="msg" id="p6_msg">輸入料號後會自動帶出型號；按「新增一列」可連續輸入多筆備品。</div>
-
-    <div class="section-title">本次補貨明細</div>
-    <table id="p6_tbl">
-      <thead>
-        <tr>
-          <th style="width:140px;">序號 serial_no</th>
-          <th>MAC</th>
-          <th>P2P</th>
-          <th style="width:130px;">狀態</th>
-          <th style="width:160px;">來源（選填）</th>
-          <th>備註（選填）</th>
-          <th style="width:70px;">刪除</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td colspan="7" style="color:#5b6b85;">尚未新增</td></tr>
-      </tbody>
-    </table>
-
-    <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
-      <button class="btn" onclick="p6Submit()">送出入庫</button>
-      <button class="btn" style="background:linear-gradient(180deg,#64748b,#475569);border-color:rgba(100,116,139,.35);" onclick="p6Clear()">清空本次明細</button>
-    </div>
-
-    <div class="section-title">目前庫存（系統彙總）</div>
-    <div class="kv" id="p6_summary">
-      <div class="k">在庫 IN_STOCK</div><div class="v">—</div>
-      <div class="k">已使用 USED</div><div class="v">—</div>
-      <div class="k">報廢 SCRAP</div><div class="v">—</div>
-      <div class="k">最後更新</div><div class="v">—</div>
-    </div>
-
-    <div class="footer-note">
-      說明：送出後資料會寫入 SpareItemLog，並自動重算 SpareStockSummary（以狀態加總）。
-    </div>
-  </div>
-</section>
-
-    </main>
-  </div>
-
-  <footer style="max-width:1200px;margin:0 auto 28px;padding:0 18px;">
-    <div style="
-      background:#ffffff;
-      border:1px solid #d7e2f3;
-      border-radius:14px;
-      padding:12px 14px;
-      color:#5b6b85;
-      font-size:12.5px;
-      box-shadow:0 6px 16px rgba(15,23,42,.06);
-    ">
-      本查詢頁僅供 CCTV／PoE Switch 外購品維修備品查詢使用。若系統程式有任何問題，請洽分機 2216（安安）。
-    </div>
-  </footer>
-</body>
-</html>
-
-
-
-
-
+          <div class="msg" id="p1_msg">請輸入任一欄位再查詢。</div_
