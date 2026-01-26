@@ -1,265 +1,155 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TECOM｜P3 維修回報（含上傳）</title>
-  <style>
-    :root{ --bg:#f6f8fb; --card:#fff; --bd:#dbe3ef; --txt:#0f172a; --muted:#64748b; }
-    *{ box-sizing:border-box; font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", Arial; }
-    body{ margin:0; background:var(--bg); color:var(--txt); }
-    .topbar{ background:#0b3a67; color:#fff; padding:14px 18px; font-weight:800; }
-    .wrap{ display:flex; gap:16px; padding:16px; max-width:1100px; margin:0 auto; }
-    .nav{ width:290px; background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:12px; }
-    .nav a{ display:block; padding:12px 12px; border-radius:10px; color:var(--txt); text-decoration:none; margin:6px 0; border:1px solid transparent; }
-    .nav a:hover{ border-color:var(--bd); background:#f2f6ff; }
-    .nav a.active{ border-color:#8ab4ff; background:#eaf2ff; font-weight:800; }
-    .card{ flex:1; background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:16px; }
-    .title{ font-size:18px; font-weight:900; margin:0 0 10px; }
-    .hint{ color:var(--muted); font-size:13px; margin:0 0 16px; line-height:1.6; }
-    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    label{ display:block; font-size:13px; color:var(--muted); margin:0 0 6px; }
-    input, select, textarea{
-      width:100%; padding:10px 12px; border:1px solid var(--bd); border-radius:10px; background:#fff; font-size:14px;
-    }
-    textarea{ min-height:120px; resize:vertical; }
-    .full{ grid-column:1/-1; }
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .btn{
-      appearance:none; border:0; border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer;
-      background:#2563eb; color:#fff;
-    }
-    .btn:disabled{ opacity:.55; cursor:not-allowed; }
-    .btn2{
-      appearance:none; border:1px solid var(--bd); border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer;
-      background:#fff; color:var(--txt);
-    }
-    .status{ margin-top:12px; padding:10px 12px; border:1px dashed var(--bd); border-radius:10px; color:var(--muted); font-size:13px; line-height:1.6; white-space:pre-line; }
-    .ok{ border-style:solid; border-color:#86efac; background:#f0fdf4; color:#166534; }
-    .err{ border-style:solid; border-color:#fecaca; background:#fef2f2; color:#991b1b; }
-    .small{ font-size:12px; color:var(--muted); margin-top:6px; }
-    @media (max-width: 900px){
-      .wrap{ flex-direction:column; }
-      .nav{ width:auto; }
-      .grid{ grid-template-columns:1fr; }
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TECOM｜P3 維修回報</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--bd:#dbe3ef;--txt:#0f172a;--muted:#64748b;}
+*{box-sizing:border-box;font-family:system-ui,-apple-system,"Noto Sans TC",Arial;}
+body{margin:0;background:var(--bg);}
+.topbar{background:#0b3a67;color:#fff;padding:14px 18px;font-weight:800;}
+.wrap{display:flex;gap:16px;padding:16px;max-width:1100px;margin:0 auto;}
+.nav{width:290px;background:#fff;border:1px solid var(--bd);border-radius:14px;padding:12px;}
+.nav a{display:block;padding:12px;border-radius:10px;color:#000;text-decoration:none;margin:6px 0;}
+.nav a.active{background:#eaf2ff;font-weight:800;}
+.card{flex:1;background:#fff;border:1px solid var(--bd);border-radius:14px;padding:16px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+label{font-size:13px;color:var(--muted);}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;}
+textarea{min-height:90px;}
+.full{grid-column:1/-1;}
+.btn{background:#2563eb;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:800;}
+.status{margin-top:12px;font-size:13px;white-space:pre-line;}
+@media(max-width:900px){.wrap{flex-direction:column}.grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <div class="topbar">TECOM｜外購品產品／備品查詢系統（維修人員專用）</div>
+<div class="topbar">TECOM｜P3 維修回報</div>
 
-  <div class="wrap">
-    <nav class="nav" aria-label="功能選單">
-      <a href="./index.html">1　產品料號／型號查詢</a>
-      <a href="./p2.html">2　產品序號／MAC 查詢</a>
-      <a class="active" href="./p3.html">3　維修回報（含上傳）</a>
-      <a href="./p4.html">4　維修查詢（區域／型號／序號）</a>
-      <a href="./p5.html">5　監控攝影機備品查詢</a>
-      <div class="hint" style="margin-top:10px;">
-        本頁：填寫維修回報並可上傳照片。<br/>
-        檔案會存入指定 Drive 資料夾，並在 RepairLog 留下連結。
-      </div>
-    </nav>
+<div class="wrap">
+<nav class="nav">
+<a href="./index.html">1 料號查詢</a>
+<a href="./p2.html">2 序號查詢</a>
+<a class="active">3 維修回報</a>
+</nav>
 
-    <section class="card">
-      <h1 class="title">P3 維修回報（含上傳）</h1>
-      <p class="hint">
-        必填欄位請完整填寫。照片可多張（建議 1–6 張、每張 8MB 內）。<br/>
-        送出後會回傳 repair_id（案件編號）。
-      </p>
+<section class="card">
+<form id="form">
+<div class="grid">
 
-      <form id="form">
-        <div class="grid">
-          <div>
-            <label for="repairItem">維修項目（必填）</label>
-            <select id="repairItem" required>
-              <option value="">請選擇</option>
-              <option>類比攝影機</option>
-              <option>網路攝影機</option>
-              <option>XVR 錄影主機</option>
-              <option>NVR 錄影主機</option>
-              <option>PoE Switch</option>
-              <option>其他</option>
-            </select>
-          </div>
+<div>
+<label>料號 product_code（必填）</label>
+<input id="productCode" required />
+</div>
 
-          <div>
-            <label for="region">區域（必填）</label>
-            <select id="region" required>
-              <option value="">請選擇</option>
-              <option>北區</option>
-              <option>中區</option>
-              <option>南區</option>
-              <option>新竹</option>
-            </select>
-          </div>
+<div>
+<label>型號 model_no（自動帶出）</label>
+<input id="modelNo" readonly />
+</div>
 
-          <div>
-            <label for="engineer">負責工程師（必填）</label>
-            <select id="engineer" required>
-              <option value="">請選擇</option>
-              <option>永富</option>
-              <option>賜郎</option>
-              <option>賜福</option>
-              <option>煌良</option>
-              <option>金菊</option>
-            </select>
-          </div>
+<div>
+<label>區域（必填）</label>
+<select id="region" required>
+<option value="">請選擇</option>
+<option>北區</option><option>中區</option><option>南區</option><option>新竹</option>
+</select>
+</div>
 
-          <div>
-            <label for="productSN">產品序號 serial_no（必填）</label>
-            <input id="productSN" placeholder="例如：RP4L00339" required />
-          </div>
+<div>
+<label>工程師（必填）</label>
+<select id="engineer" required>
+<option value="">請選擇</option>
+<option>永富</option><option>賜郎</option><option>賜福</option><option>煌良</option><option>金菊</option>
+</select>
+</div>
 
-          <div>
-            <label for="receiveDate">收件日期 receive_date（必填，預設今天）</label>
-            <input id="receiveDate" type="date" required />
-          </div>
+<div>
+<label>產品序號 serial_no</label>
+<input id="productSN" required />
+</div>
 
-          <div>
-            <label for="customer">送修客戶 customer_name（選填）</label>
-            <input id="customer" placeholder="例如：順喜科技" />
-          </div>
+<div>
+<label>收件日期</label>
+<input id="receiveDate" type="date" required />
+</div>
 
-          <div class="full">
-            <label for="reason">問題描述 issue_desc（必填）</label>
-            <textarea id="reason" placeholder="請描述故障現象、測試狀況、你觀察到的重點…" required></textarea>
-          </div>
+<div class="full">
+<label>問題描述 issue_desc</label>
+<textarea id="reason" required></textarea>
+</div>
 
-          <div class="full">
-            <label for="photos">照片上傳（選填，可多張）</label>
-            <input id="photos" type="file" accept="image/*" multiple />
-            <div class="small">提示：手機拍的照片很大，若送出慢可先縮圖再傳。</div>
-          </div>
+<div class="full">
+<label>備註 note</label>
+<textarea id="note"></textarea>
+</div>
 
-          <div class="full row">
-            <button class="btn" id="btnSubmit" type="submit">送出回報</button>
-            <button class="btn2" id="btnReset" type="button">清空重填</button>
-          </div>
-        </div>
+<div class="full">
+<label>照片上傳</label>
+<input id="photos" type="file" multiple accept="image/*" />
+</div>
 
-        <div id="status" class="status">狀態：待送出</div>
-      </form>
-    </section>
-  </div>
+<div class="full">
+<button class="btn">送出</button>
+</div>
+
+</div>
+</form>
+
+<div id="status" class="status">狀態：待送出</div>
+</section>
+</div>
 
 <script>
-  // 你只要換這行：貼上 Apps Script 部署的 Web App URL
-  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxI1qYGeF-NcsBcKmU9i251QxoHx_9gju_Duj6HXjuLUghS9FGZoy5Bctdzzetw1FebqQ/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgliyhb8A-xNzsosa-iJ0g-R4DpnX2EZy3DbSG7DC7QWs8xxPdR3c_fTPxnF4bngJ5WQ/exec';
+const $ = id => document.getElementById(id);
 
-  const $ = (id) => document.getElementById(id);
-  const statusEl = $('status');
-  const formEl = $('form');
-  const btnSubmit = $('btnSubmit');
-  const btnReset  = $('btnReset');
+// 預設日期
+(() => {
+ const d=new Date(),p=n=>String(n).padStart(2,'0');
+ $('receiveDate').value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+})();
 
-  // 預設今天
-  (function initDate(){
-    const d = new Date();
-    const pad = (n) => String(n).padStart(2,'0');
-    $('receiveDate').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  })();
+// 料號 → 查型號
+$('productCode').addEventListener('blur', async () => {
+ const code=$('productCode').value.trim();
+ if(!code) return;
+ const r=await fetch(WEB_APP_URL,{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({action:'lookupModel',product_code:code})
+ });
+ const j=await r.json();
+ $('modelNo').value = j.ok ? (j.model_no || '查無資料') : '查詢失敗';
+});
 
-  btnReset.addEventListener('click', () => {
-    formEl.reset();
-    const d = new Date();
-    const pad = (n) => String(n).padStart(2,'0');
-    $('receiveDate').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    setStatus('狀態：已清空，待送出');
-  });
-
-  formEl.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-
-    if (!WEB_APP_URL || WEB_APP_URL.includes('PASTE_YOUR_WEB_APP_URL')) {
-      setStatus('錯誤：尚未設定 WEB_APP_URL（請貼上 Apps Script 部署的 Web App URL）', 'err');
-      return;
-    }
-
-    const data = {
-      repairItem: $('repairItem').value.trim(),
-      region: $('region').value.trim(),
-      engineer: $('engineer').value.trim(),
-      productSN: $('productSN').value.trim(),
-      receiveDate: $('receiveDate').value,
-      customer: $('customer').value.trim(),
-      reason: $('reason').value.trim(),
-      createdBy: 'P3-Web'
-    };
-
-    const required = ['repairItem','region','engineer','productSN','receiveDate','reason'];
-    const missing = required.filter(k => !String(data[k]||'').trim());
-    if (missing.length) {
-      setStatus('錯誤：必填欄位未填完整。缺少：' + missing.join(', '), 'err');
-      return;
-    }
-
-    try {
-      btnSubmit.disabled = true;
-      btnReset.disabled = true;
-      setStatus('上傳中：讀取照片與送出資料…');
-
-      const files = Array.from($('photos').files || []);
-      const images = [];
-
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
-
-        // 單張限制 8MB（跟 gs 一致）
-        if (f.size > 8 * 1024 * 1024) {
-          throw new Error(`第 ${i+1} 張照片超過 8MB，請先縮小再上傳：${f.name}`);
-        }
-
-        const base64 = await readAsDataURL(f);
-        images.push({ name: f.name, type: f.type, base64 });
-        setStatus(`上傳中：已準備 ${i+1}/${files.length} 張照片…`);
-      }
-
-      const payload = { action: 'submit', data, images };
-
-      const resp = await fetch(WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await resp.json();
-
-      if (!result.ok) {
-        const extra = result.missing ? `\n缺少：${result.missing.join(', ')}` : '';
-        setStatus('送出失敗：' + (result.error || 'Unknown error') + extra, 'err');
-        return;
-      }
-
-      const msg =
-        `送出成功！\n` +
-        `repair_id：${result.repair_id}\n` +
-        `已存照片：${result.image_count} 張\n` +
-        `Drive 資料夾：${result.folder_url}`;
-
-      setStatus(msg, 'ok');
-
-    } catch (err) {
-      setStatus('送出失敗：' + String(err.message || err), 'err');
-    } finally {
-      btnSubmit.disabled = false;
-      btnReset.disabled = false;
-    }
-  });
-
-  function setStatus(text, type){
-    statusEl.className = 'status' + (type ? (' ' + type) : '');
-    statusEl.textContent = text;
-  }
-
-  function readAsDataURL(file){
-    return new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result);
-      r.onerror = () => reject(new Error('讀取檔案失敗：' + file.name));
-      r.readAsDataURL(file);
-    });
-  }
+$('form').addEventListener('submit', async e=>{
+ e.preventDefault();
+ const data={
+  productCode:$('productCode').value,
+  modelNo:$('modelNo').value,
+  productSN:$('productSN').value,
+  region:$('region').value,
+  engineer:$('engineer').value,
+  receiveDate:$('receiveDate').value,
+  reason:$('reason').value,
+  note:$('note').value,
+  createdBy:'P3-Web'
+ };
+ const files=[...$('photos').files];
+ const images=[];
+ for(const f of files){
+  const b=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});
+  images.push({name:f.name,type:f.type,base64:b});
+ }
+ const r=await fetch(WEB_APP_URL,{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({action:'submit',data,images})
+ });
+ const j=await r.json();
+ $('status').textContent = j.ok ? `完成！repair_id=${j.repair_id}` : `失敗：${j.error}`;
+});
 </script>
 </body>
 </html>
