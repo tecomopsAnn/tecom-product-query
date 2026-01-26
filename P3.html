@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TECOM｜維修回報（含上傳）</title>
+  <title>TECOM｜P3 維修回報（含上傳）</title>
   <style>
     :root{ --bg:#f6f8fb; --card:#fff; --bd:#dbe3ef; --txt:#0f172a; --muted:#64748b; }
     *{ box-sizing:border-box; font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", Arial; }
     body{ margin:0; background:var(--bg); color:var(--txt); }
-    .topbar{ background:#0b3a67; color:#fff; padding:14px 18px; font-weight:700; }
+    .topbar{ background:#0b3a67; color:#fff; padding:14px 18px; font-weight:800; }
     .wrap{ display:flex; gap:16px; padding:16px; max-width:1100px; margin:0 auto; }
     .nav{ width:290px; background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:12px; }
     .nav a{ display:block; padding:12px 12px; border-radius:10px; color:var(--txt); text-decoration:none; margin:6px 0; border:1px solid transparent; }
     .nav a:hover{ border-color:var(--bd); background:#f2f6ff; }
-    .nav a.active{ border-color:#8ab4ff; background:#eaf2ff; font-weight:700; }
+    .nav a.active{ border-color:#8ab4ff; background:#eaf2ff; font-weight:800; }
     .card{ flex:1; background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:16px; }
-    .title{ font-size:18px; font-weight:800; margin:0 0 10px; }
+    .title{ font-size:18px; font-weight:900; margin:0 0 10px; }
     .hint{ color:var(--muted); font-size:13px; margin:0 0 16px; line-height:1.6; }
     .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     label{ display:block; font-size:13px; color:var(--muted); margin:0 0 6px; }
@@ -24,19 +24,20 @@
     }
     textarea{ min-height:120px; resize:vertical; }
     .full{ grid-column:1/-1; }
-    .row{ display:flex; gap:10px; align-items:center; }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .btn{
-      appearance:none; border:0; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer;
+      appearance:none; border:0; border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer;
       background:#2563eb; color:#fff;
     }
     .btn:disabled{ opacity:.55; cursor:not-allowed; }
     .btn2{
-      appearance:none; border:1px solid var(--bd); border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer;
+      appearance:none; border:1px solid var(--bd); border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer;
       background:#fff; color:var(--txt);
     }
-    .status{ margin-top:12px; padding:10px 12px; border:1px dashed var(--bd); border-radius:10px; color:var(--muted); font-size:13px; line-height:1.6; }
+    .status{ margin-top:12px; padding:10px 12px; border:1px dashed var(--bd); border-radius:10px; color:var(--muted); font-size:13px; line-height:1.6; white-space:pre-line; }
     .ok{ border-style:solid; border-color:#86efac; background:#f0fdf4; color:#166534; }
     .err{ border-style:solid; border-color:#fecaca; background:#fef2f2; color:#991b1b; }
+    .small{ font-size:12px; color:var(--muted); margin-top:6px; }
     @media (max-width: 900px){
       .wrap{ flex-direction:column; }
       .nav{ width:auto; }
@@ -56,15 +57,15 @@
       <a href="./p5.html">5　監控攝影機備品查詢</a>
       <div class="hint" style="margin-top:10px;">
         本頁：填寫維修回報並可上傳照片。<br/>
-        上傳檔案會存入指定 Drive 資料夾，並在試算表留下連結。
+        檔案會存入指定 Drive 資料夾，並在 RepairLog 留下連結。
       </div>
     </nav>
 
     <section class="card">
-      <h1 class="title">維修回報（含上傳）</h1>
+      <h1 class="title">P3 維修回報（含上傳）</h1>
       <p class="hint">
-        必填欄位請完整填寫。照片可多張（建議 1–6 張、每張 5MB 內較順）。<br/>
-        送出後會回傳案件編號（Ticket ID）。
+        必填欄位請完整填寫。照片可多張（建議 1–6 張、每張 8MB 內）。<br/>
+        送出後會回傳 repair_id（案件編號）。
       </p>
 
       <form id="form">
@@ -83,33 +84,52 @@
           </div>
 
           <div>
-            <label for="kNo">科號（必填）</label>
-            <input id="kNo" placeholder="例如：671-502606R" required />
+            <label for="region">區域（必填）</label>
+            <select id="region" required>
+              <option value="">請選擇</option>
+              <option>北區</option>
+              <option>中區</option>
+              <option>南區</option>
+              <option>新竹</option>
+            </select>
           </div>
 
           <div>
-            <label for="productSN">產品序號（必填）</label>
+            <label for="engineer">負責工程師（必填）</label>
+            <select id="engineer" required>
+              <option value="">請選擇</option>
+              <option>永富</option>
+              <option>賜郎</option>
+              <option>賜福</option>
+              <option>煌良</option>
+              <option>金菊</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="productSN">產品序號 serial_no（必填）</label>
             <input id="productSN" placeholder="例如：RP4L00339" required />
           </div>
 
           <div>
-            <label for="customer">送修客戶（選填）</label>
-            <input id="customer" placeholder="例如：順喜科技" />
-          </div>
-
-          <div>
-            <label for="receiveDate">收件日期（必填，預設今天）</label>
+            <label for="receiveDate">收件日期 receive_date（必填，預設今天）</label>
             <input id="receiveDate" type="date" required />
           </div>
 
           <div>
-            <label for="photos">照片上傳（選填，可多張）</label>
-            <input id="photos" type="file" accept="image/*" multiple />
+            <label for="customer">送修客戶 customer_name（選填）</label>
+            <input id="customer" placeholder="例如：順喜科技" />
           </div>
 
           <div class="full">
-            <label for="reason">維修原因說明（必填）</label>
-            <textarea id="reason" placeholder="請描述故障現象、測試狀況、處理方式、備註…" required></textarea>
+            <label for="reason">問題描述 issue_desc（必填）</label>
+            <textarea id="reason" placeholder="請描述故障現象、測試狀況、你觀察到的重點…" required></textarea>
+          </div>
+
+          <div class="full">
+            <label for="photos">照片上傳（選填，可多張）</label>
+            <input id="photos" type="file" accept="image/*" multiple />
+            <div class="small">提示：手機拍的照片很大，若送出慢可先縮圖再傳。</div>
           </div>
 
           <div class="full row">
@@ -124,8 +144,8 @@
   </div>
 
 <script>
-  // 你要做的只有這件事：把部署後的 Web App URL 貼上來
-  const WEB_APP_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
+  // 你只要換這行：貼上 Apps Script 部署的 Web App URL
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxI1qYGeF-NcsBcKmU9i251QxoHx_9gju_Duj6HXjuLUghS9FGZoy5Bctdzzetw1FebqQ/exec';
 
   const $ = (id) => document.getElementById(id);
   const statusEl = $('status');
@@ -142,7 +162,6 @@
 
   btnReset.addEventListener('click', () => {
     formEl.reset();
-    // 重設日期為今天
     const d = new Date();
     const pad = (n) => String(n).padStart(2,'0');
     $('receiveDate').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -159,15 +178,16 @@
 
     const data = {
       repairItem: $('repairItem').value.trim(),
-      kNo: $('kNo').value.trim(),
+      region: $('region').value.trim(),
+      engineer: $('engineer').value.trim(),
       productSN: $('productSN').value.trim(),
-      customer: $('customer').value.trim(),
       receiveDate: $('receiveDate').value,
-      reason: $('reason').value.trim()
+      customer: $('customer').value.trim(),
+      reason: $('reason').value.trim(),
+      createdBy: 'P3-Web'
     };
 
-    // 簡單必填檢查
-    const required = ['repairItem','kNo','productSN','receiveDate','reason'];
+    const required = ['repairItem','region','engineer','productSN','receiveDate','reason'];
     const missing = required.filter(k => !String(data[k]||'').trim());
     if (missing.length) {
       setStatus('錯誤：必填欄位未填完整。缺少：' + missing.join(', '), 'err');
@@ -181,12 +201,15 @@
 
       const files = Array.from($('photos').files || []);
       const images = [];
+
       for (let i = 0; i < files.length; i++) {
         const f = files[i];
-        // 建議限制一下大小（你也可改）
+
+        // 單張限制 8MB（跟 gs 一致）
         if (f.size > 8 * 1024 * 1024) {
           throw new Error(`第 ${i+1} 張照片超過 8MB，請先縮小再上傳：${f.name}`);
         }
+
         const base64 = await readAsDataURL(f);
         images.push({ name: f.name, type: f.type, base64 });
         setStatus(`上傳中：已準備 ${i+1}/${files.length} 張照片…`);
@@ -200,19 +223,19 @@
         body: JSON.stringify(payload)
       });
 
-      // 若瀏覽器遇到 CORS，通常會在這一步就丟錯，不會到這裡
       const result = await resp.json();
 
       if (!result.ok) {
-        setStatus('送出失敗：' + (result.error || 'Unknown error') + (result.missing ? `\n缺少：${result.missing.join(', ')}` : ''), 'err');
+        const extra = result.missing ? `\n缺少：${result.missing.join(', ')}` : '';
+        setStatus('送出失敗：' + (result.error || 'Unknown error') + extra, 'err');
         return;
       }
 
       const msg =
         `送出成功！\n` +
-        `案件編號：${result.ticketId}\n` +
-        `已存照片：${result.savedImages} 張\n` +
-        `Drive 資料夾：${result.folderUrl}`;
+        `repair_id：${result.repair_id}\n` +
+        `已存照片：${result.image_count} 張\n` +
+        `Drive 資料夾：${result.folder_url}`;
 
       setStatus(msg, 'ok');
 
