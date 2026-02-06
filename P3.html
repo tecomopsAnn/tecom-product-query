@@ -15,12 +15,13 @@ body{margin:0;background:var(--bg);}
 .nav a.active{background:#eaf2ff;font-weight:800;}
 .card{flex:1;background:#fff;border:1px solid var(--bd);border-radius:14px;padding:16px;}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-label{font-size:13px;color:var(--muted);}
-input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;font-size:16px;}
 textarea{min-height:90px;}
 .full{grid-column:1/-1;}
-.btn{background:#2563eb;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:800;}
-.status{margin-top:12px;font-size:13px;white-space:pre-line;}
+.btn{background:#2563eb;color:#fff;border:0;border-radius:10px;padding:12px 16px;font-weight:800;width:100%;cursor:pointer;}
+.btn:disabled{background:#cbd5e1;cursor:not-allowed;}
+.status{margin-top:12px;font-size:14px;padding:10px;border-radius:8px;background:#f8fafc;}
 @media(max-width:900px){.wrap{flex-direction:column}.grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -37,15 +38,14 @@ textarea{min-height:90px;}
 <section class="card">
 <form id="form">
 <div class="grid">
-
 <div>
-<label>料號 product_code（必填）</label>
-<input id="productCode" required />
+<label>料號 product_code（必填，輸入完點旁邊）</label>
+<input id="productCode" placeholder="例如: RP4L00339" required />
 </div>
 
 <div>
 <label>型號 model_no（自動帶出）</label>
-<input id="modelNo" readonly />
+<input id="modelNo" readonly style="background:#f1f5f9" placeholder="自動查詢中..." />
 </div>
 
 <div>
@@ -85,70 +85,111 @@ textarea{min-height:90px;}
 </div>
 
 <div class="full">
-<label>照片上傳</label>
+<label>照片上傳 (可選多張)</label>
 <input id="photos" type="file" multiple accept="image/*" />
 </div>
 
 <div class="full">
-<button class="btn">送出</button>
+<button type="submit" id="submitBtn" class="btn">確認送出</button>
 </div>
-
 </div>
 </form>
 
-<div id="status" class="status">狀態：待送出</div>
+<div id="status" class="status">狀態：等待輸入資料</div>
 </section>
 </div>
 
 <script>
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwgliyhb8A-xNzsosa-iJ0g-R4DpnX2EZy3DbSG7DC7QWs8xxPdR3c_fTPxnF4bngJ5WQ/exec';
+// 請將下方的網址替換成妳「部署」後的 Web App 網址
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz6E5FLzlGDSY1VUZU8a8Xpr3KYYhvPWqYmso8tkXhs7QAH7sGMvdc5t8j7k6cdBx3S/exec';
 const $ = id => document.getElementById(id);
 
-// 預設日期
+// 1. 初始化預設日期
 (() => {
- const d=new Date(),p=n=>String(n).padStart(2,'0');
- $('receiveDate').value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+  const d=new Date(), p=n=>String(n).padStart(2,'0');
+  $('receiveDate').value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
 })();
 
-// 料號 → 查型號
+// 2. 料號輸入完畢自動查型號
 $('productCode').addEventListener('blur', async () => {
- const code=$('productCode').value.trim();
- if(!code) return;
- const r=await fetch(WEB_APP_URL,{
-  method:'POST',
-  headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({action:'lookupModel',product_code:code})
- });
- const j=await r.json();
- $('modelNo').value = j.ok ? (j.model_no || '查無資料') : '查詢失敗';
+  const code = $('productCode').value.trim();
+  if (!code) return;
+  
+  $('status').textContent = '狀態：正在查詢型號庫...';
+  try {
+    const resp = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'lookupModel', product_code: code })
+    });
+    const result = await resp.json();
+    if (result.ok) {
+      $('modelNo').value = result.model_no || '資料庫無此料號';
+      $('status').textContent = result.model_no ? '狀態：型號查詢成功' : '狀態：查無資料，請檢查料號';
+    }
+  } catch (e) {
+    $('status').textContent = '狀態：通訊失敗，請檢查網路';
+  }
 });
 
-$('form').addEventListener('submit', async e=>{
- e.preventDefault();
- const data={
-  productCode:$('productCode').value,
-  modelNo:$('modelNo').value,
-  productSN:$('productSN').value,
-  region:$('region').value,
-  engineer:$('engineer').value,
-  receiveDate:$('receiveDate').value,
-  reason:$('reason').value,
-  note:$('note').value,
-  createdBy:'P3-Web'
- };
- const files=[...$('photos').files];
- const images=[];
- for(const f of files){
-  const b=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});
-  images.push({name:f.name,type:f.type,base64:b});
- }
- const r=await fetch(WEB_APP_URL,{
-  method:'POST',
-  headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({action:'submit',data,images})
- });
- const j=await r.json();
- $('status').textContent = j.ok ? `完成！repair_id=${j.repair_id}` : `失敗：${j.error}`;
+// 3. 表單送出處理
+$('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const btn = $('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '系統處理中，請勿關閉網頁...';
+  $('status').textContent = '狀態：正在準備圖片並上傳至 Google Drive...';
+
+  try {
+    // 讀取檔案轉 Base64
+    const files = [...$('photos').files];
+    const images = [];
+    for (const f of files) {
+      const base64 = await new Promise(res => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result);
+        reader.readAsDataURL(f);
+      });
+      images.push({ name: f.name, type: f.type, base64: base64 });
+    }
+
+    const payload = {
+      action: 'submit',
+      data: {
+        productCode: $('productCode').value,
+        modelNo: $('modelNo').value,
+        productSN: $('productSN').value,
+        region: $('region').value,
+        engineer: $('engineer').value,
+        receiveDate: $('receiveDate').value,
+        reason: $('reason').value,
+        note: $('note').value
+      },
+      images: images
+    };
+
+    const resp = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const result = await resp.json();
+
+    if (result.ok) {
+      $('status').innerHTML = `<b style="color:green">✅ 維修回報成功！</b><br>單號：${result.repair_id}`;
+      $('form').reset();
+      // 重新填入日期
+      const d=new Date(), p=n=>String(n).padStart(2,'0');
+      $('receiveDate').value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+    } else {
+      $('status').textContent = '❌ 送出失敗：' + result.error;
+    }
+  } catch (err) {
+    $('status').textContent = '❌ 系統通訊出錯，請稍後再試';
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '確認送出';
+  }
 });
 </script>
 </body>
